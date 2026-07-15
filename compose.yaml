@@ -1,0 +1,18 @@
+name: moonlit-mountain
+
+services:
+  halo:
+    image: halohub/halo:2.25.4
+    ports:
+      - "127.0.0.1:8090:8090"
+    environment:
+      SPRING_THYMELEAF_CACHE: "false"
+    command:
+      - --halo.external-url=http://localhost:8090/
+      - --halo.security.basic-auth.disabled=false
+    volumes:
+      - halo-data:/root/.halo2
+      - ./:/root/.halo2/themes/moonlit-mountain
+
+volumes:
+  halo-data:

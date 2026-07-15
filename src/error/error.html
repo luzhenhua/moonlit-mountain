@@ -1,0 +1,19 @@
+<include src="error-layout.html">
+  <template name="head">
+    <title th:text="|${error.status ?: 500} - ${site.title}|">页面未找到 - 山月记</title>
+  </template>
+
+  <section class="error-page container">
+    <div th:with="statusCode = ${error.status ?: 500}">
+      <p class="eyebrow">LOST IN THE MOUNTAINS</p>
+      <h1 th:text="${statusCode}">404</h1>
+      <h2 th:if="${statusCode == 404}">页面没有找到</h2>
+      <h2 th:if="${statusCode >= 400 and statusCode < 500 and statusCode != 404}">请求暂时无法处理</h2>
+      <h2 th:if="${statusCode >= 500}">服务暂时不可用</h2>
+      <h2 th:if="${statusCode < 400}">页面暂时无法抵达</h2>
+      <p th:if="${statusCode == 404}">这条山路没有通向页面，也许内容已经迁移或暂时离开。</p>
+      <p th:if="${statusCode != 404}">请稍后再试，或返回首页继续浏览。</p>
+      <a class="button button--primary" th:href="@{/}">返回首页</a>
+    </div>
+  </section>
+</include>

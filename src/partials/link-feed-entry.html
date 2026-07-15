@@ -1,0 +1,91 @@
+<li
+  class="link-feed-entry"
+  th:attr="data-feed-id=${feed.id}"
+  th:with="
+    feedTitle = ${#strings.isEmpty(feed.title) ? '未命名近况' : feed.title},
+    feedUrlValue = ${feed.url ?: ''},
+    feedUrlLower = ${#strings.toLowerCase(feedUrlValue)},
+    feedUrl = ${(#strings.startsWith(feedUrlLower, 'https://') or #strings.startsWith(feedUrlLower, 'http://')) ? feedUrlValue : ''},
+    feedSummary = ${feed.summary ?: ''},
+    feedAuthor = ${#strings.isEmpty(feed.author) ? '友邻站点' : feed.author},
+    feedAuthorUrlValue = ${feed.authorUrl ?: ''},
+    feedAuthorUrlLower = ${#strings.toLowerCase(feedAuthorUrlValue)},
+    feedAuthorUrl = ${(#strings.startsWith(feedAuthorUrlLower, 'https://') or #strings.startsWith(feedAuthorUrlLower, 'http://')) ? feedAuthorUrlValue : ''},
+    feedAuthorLogo = ${feed.authorLogo ?: ''},
+    feedTime = ${feed.publishedAt ?: (feed.updatedAt ?: feed.fetchedAt)}
+  "
+>
+  <a
+    class="link-feed-entry__source"
+    th:if="${not #strings.isEmpty(feedAuthorUrl)}"
+    th:href="@{${feedAuthorUrl}}"
+    target="_blank"
+    rel="noopener noreferrer external"
+    th:aria-label="|访问订阅来源：${feedAuthor}|"
+  >
+    <span class="link-feed-entry__logo" th:classappend="${#strings.isEmpty(feedAuthorLogo)} ? ' is-fallback'">
+      <img
+        th:if="${not #strings.isEmpty(feedAuthorLogo)}"
+        th:src="${feedAuthorLogo}"
+        alt=""
+        width="18"
+        height="18"
+        loading="lazy"
+        decoding="async"
+        data-feed-logo
+      />
+      <span aria-hidden="true" th:text="${#strings.substring(feedAuthor, 0, 1)}">友</span>
+    </span>
+    <span th:text="${feedAuthor}">友邻站点</span>
+  </a>
+  <span class="link-feed-entry__source link-feed-entry__source--static" th:unless="${not #strings.isEmpty(feedAuthorUrl)}">
+    <span class="link-feed-entry__logo" th:classappend="${#strings.isEmpty(feedAuthorLogo)} ? ' is-fallback'">
+      <img
+        th:if="${not #strings.isEmpty(feedAuthorLogo)}"
+        th:src="${feedAuthorLogo}"
+        alt=""
+        width="18"
+        height="18"
+        loading="lazy"
+        decoding="async"
+        data-feed-logo
+      />
+      <span aria-hidden="true" th:text="${#strings.substring(feedAuthor, 0, 1)}">友</span>
+    </span>
+    <span th:text="${feedAuthor}">友邻站点</span>
+  </span>
+
+  <a
+    class="link-feed-entry__story"
+    th:if="${not #strings.isEmpty(feedUrl)}"
+    th:href="@{${feedUrl}}"
+    target="_blank"
+    rel="noopener noreferrer external"
+    th:aria-label="|阅读 ${feedAuthor} 的文章：${feedTitle}|"
+  >
+    <strong th:text="${feedTitle}">文章标题</strong>
+    <span class="link-feed-entry__summary" th:if="${not #strings.isEmpty(feedSummary)}" th:text="${feedSummary}">文章摘要</span>
+    <time class="link-feed-entry__time" th:if="${feedTime != null}" th:datetime="${feedTime}">
+      <span th:text="${#temporals.format(feedTime, 'yyyy.MM.dd')}">2026.07.15</span>
+      <span aria-hidden="true">•</span>
+      <small th:text="${#temporals.format(feedTime, 'HH:mm')}">10:24</small>
+    </time>
+    <span class="link-feed-entry__time link-feed-entry__time--unknown" th:unless="${feedTime != null}">时间未记录</span>
+    <span class="link-feed-entry__cta" aria-hidden="true">
+      <span>阅读</span>
+      <svg viewBox="0 0 24 24"><path d="M17 7 7 17M8 7h9v9" /></svg>
+    </span>
+  </a>
+  <div class="link-feed-entry__story link-feed-entry__story--static" th:unless="${not #strings.isEmpty(feedUrl)}">
+    <strong th:text="${feedTitle}">文章标题</strong>
+    <span class="link-feed-entry__summary" th:if="${not #strings.isEmpty(feedSummary)}" th:text="${feedSummary}">文章摘要</span>
+    <time class="link-feed-entry__time" th:if="${feedTime != null}" th:datetime="${feedTime}">
+      <span th:text="${#temporals.format(feedTime, 'yyyy.MM.dd')}">2026.07.15</span>
+      <span aria-hidden="true">•</span>
+      <small th:text="${#temporals.format(feedTime, 'HH:mm')}">10:24</small>
+    </time>
+    <span class="link-feed-entry__time link-feed-entry__time--unknown" th:unless="${feedTime != null}">时间未记录</span>
+    <span class="link-feed-entry__unavailable">原文地址暂不可用</span>
+  </div>
+  <span class="link-feed-entry__spectral-line" aria-hidden="true"></span>
+</li>

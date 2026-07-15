@@ -1,0 +1,79 @@
+<include src="layout.html">
+  <template name="head">
+    <title th:text="|${title ?: '瞬间'} - ${site.title}|">瞬间 - 山月记</title>
+  </template>
+
+  <section class="moment-page">
+    <header class="moment-page__hero">
+      <h1>我的瞬间</h1>
+      <p>一路记录下来的片刻，有些直到今天仍在发光。</p>
+      <p class="moment-page__filter-state" th:if="${not #lists.isEmpty(param.tag)}">
+        <span th:text="|正在浏览 #${param.tag[0]}|">正在浏览 #标签</span>
+        <a th:href="@{/moments}">查看全部</a>
+      </p>
+    </header>
+
+    <th:block th:if="${pluginFinder.available('PluginMoments', '>=1.16.1')}">
+      <div class="moment-stream" th:if="${not #lists.isEmpty(moments.items)}">
+        <th:block
+          th:each="yearSource, yearStat : ${moments.items}"
+          th:with="
+            yearSourceTime = ${yearSource.spec.releaseTime ?: yearSource.metadata.creationTimestamp},
+            previousSource = ${yearStat.first ? null : moments.items[yearStat.index - 1]},
+            previousSourceTime = ${previousSource == null ? null : (previousSource.spec.releaseTime ?: previousSource.metadata.creationTimestamp)}
+          "
+        >
+          <section
+            class="moment-year-group"
+            th:if="${yearStat.first or #temporals.format(yearSourceTime, 'yyyy') != #temporals.format(previousSourceTime, 'yyyy')}"
+            th:attr="id=|moments-${#temporals.format(yearSourceTime, 'yyyy')}|,aria-labelledby=|moments-${#temporals.format(yearSourceTime, 'yyyy')}-title|"
+          >
+            <header class="moment-year-rail">
+              <span class="moment-year-rail__node" aria-hidden="true"><span></span></span>
+              <h2
+                th:id="|moments-${#temporals.format(yearSourceTime, 'yyyy')}-title|"
+                th:text="${#temporals.format(yearSourceTime, 'yyyy')}"
+              >
+                2026
+              </h2>
+            </header>
+
+            <div class="moment-year-group__cards">
+              <th:block
+                th:each="moment, momentStat : ${moments.items}"
+                th:with="
+                  releaseTime = ${moment.spec.releaseTime ?: moment.metadata.creationTimestamp},
+                  momentDetail = false,
+                  momentIndex = ${momentStat.index}
+                "
+              >
+                <th:block th:if="${#temporals.format(releaseTime, 'yyyy') == #temporals.format(yearSourceTime, 'yyyy')}">
+                  <include src="moment-entry.html"></include>
+                </th:block>
+              </th:block>
+            </div>
+          </section>
+        </th:block>
+      </div>
+
+      <div class="empty-state moment-empty" th:if="${#lists.isEmpty(moments.items)}">
+        <span class="moment-empty__signal" aria-hidden="true"><span></span></span>
+        <h2>这一段时间还很安静</h2>
+        <p>从 Halo 控制台发布第一条瞬间，短句、图片、声音与视频都会在这里按年份展开。</p>
+      </div>
+
+      <nav class="pagination moment-pagination" aria-label="瞬间分页" th:if="${moments.hasPrevious() || moments.hasNext()}">
+        <a th:if="${moments.hasPrevious()}" th:href="@{${moments.prevUrl}}" rel="prev">上一页</a>
+        <span><strong th:text="${moments.page}">1</strong> / <span th:text="${moments.totalPages}">1</span></span>
+        <a th:if="${moments.hasNext()}" th:href="@{${moments.nextUrl}}" rel="next">下一页</a>
+      </nav>
+    </th:block>
+
+    <div class="empty-state moment-empty" th:unless="${pluginFinder.available('PluginMoments', '>=1.16.1')}">
+      <h2>瞬间插件需要更新</h2>
+      <p>山月记的完整瞬间体验需要官方 Moments 插件 1.16.1 或更高版本。</p>
+    </div>
+
+    <p class="sr-only" aria-live="polite" data-moment-feedback></p>
+  </section>
+</include>

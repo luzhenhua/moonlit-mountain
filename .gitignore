@@ -1,0 +1,13 @@
+/node_modules/
+/templates/
+/dist/
+/.vite/
+/.pnpm-store/
+/.codex-evidence/
+/output/
+/.playwright-cli/
+.DS_Store
+.idea/
+*.iml
+*.log
+design-qa.md

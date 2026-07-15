@@ -1,0 +1,146 @@
+<include src="layout.html">
+  <template name="head">
+    <title th:text="|${title ?: '照片'} - ${site.title}|">照片 - 山月记</title>
+  </template>
+
+  <article class="photo-detail container">
+    <header class="photo-detail__toolbar">
+      <a class="photo-back" th:href="@{${backUrl}}">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+        <span>返回图库</span>
+      </a>
+      <p class="photo-detail__position">
+        <span>FRAME</span>
+        <strong th:text="${position}">1</strong>
+        <span>/</span>
+        <span th:text="${total}">1</span>
+      </p>
+    </header>
+
+    <figure class="photo-stage">
+      <div class="photo-stage__media">
+        <img
+          th:src="${thumbnail.gen(photo.spec.url, 'l')}"
+          th:srcset="|${thumbnail.gen(photo.spec.url, 's')} 400w, ${thumbnail.gen(photo.spec.url, 'm')} 800w, ${thumbnail.gen(photo.spec.url, 'l')} 1200w|"
+          sizes="(max-width: 767px) calc(100vw - 52px), min(1170px, calc(100vw - 112px))"
+          th:alt="${#strings.isEmpty(photo.spec.displayName) ? '图库照片' : photo.spec.displayName}"
+          th:attr="width=${photo.exif != null ? photo.exif.imageWidth : null},height=${photo.exif != null ? photo.exif.imageHeight : null}"
+          decoding="async"
+          fetchpriority="high"
+        />
+        <a
+          class="photo-original"
+          th:href="@{${photo.spec.url}}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="在新标签页查看原图"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-7 7M19 14v5H5V5h5" /></svg>
+          <span>查看原图</span>
+        </a>
+      </div>
+
+      <figcaption class="photo-caption">
+        <div class="photo-caption__copy">
+          <p class="eyebrow">照片手记</p>
+          <h1 th:text="${#strings.isEmpty(photo.spec.displayName) ? (title ?: '未命名照片') : photo.spec.displayName}">照片名称</h1>
+          <p class="photo-caption__description" th:if="${not #strings.isEmpty(photo.spec.description)}" th:text="${photo.spec.description}">
+            照片描述
+          </p>
+          <ul class="photo-tags" th:if="${not #lists.isEmpty(photo.spec.tags)}" aria-label="照片标签">
+            <li th:each="tag : ${photo.spec.tags}"><span>#</span><span th:text="${tag}">标签</span></li>
+          </ul>
+        </div>
+
+        <dl class="photo-exif" th:if="${photo.exif != null}">
+          <div th:if="${not #strings.isEmpty(photo.exif.make) or not #strings.isEmpty(photo.exif.model)}">
+            <dt>相机</dt>
+            <dd th:text="|${photo.exif.make ?: ''} ${photo.exif.model ?: ''}|">相机型号</dd>
+          </div>
+          <div th:if="${not #strings.isEmpty(photo.exif.lensModel)}">
+            <dt>镜头</dt>
+            <dd th:text="${photo.exif.lensModel}">镜头型号</dd>
+          </div>
+          <div th:if="${photo.exif.fNumber != null}">
+            <dt>光圈</dt>
+            <dd th:text="|f/${photo.exif.fNumber}|">f/2.8</dd>
+          </div>
+          <div th:if="${not #strings.isEmpty(photo.exif.exposureTime)}">
+            <dt>快门</dt>
+            <dd th:text="${photo.exif.exposureTime}">1/125</dd>
+          </div>
+          <div th:if="${photo.exif.iso != null}">
+            <dt>ISO</dt>
+            <dd th:text="${photo.exif.iso}">100</dd>
+          </div>
+          <div th:if="${photo.exif.focalLength != null}">
+            <dt>焦距</dt>
+            <dd th:text="|${photo.exif.focalLength} mm|">50 mm</dd>
+          </div>
+          <div th:if="${photo.exif.imageWidth != null and photo.exif.imageHeight != null}">
+            <dt>尺寸</dt>
+            <dd th:text="|${photo.exif.imageWidth} × ${photo.exif.imageHeight}|">4032 × 3024</dd>
+          </div>
+          <div th:if="${photo.exif.dateTimeOriginal != null}">
+            <dt>拍摄于</dt>
+            <dd th:text="${#temporals.format(photo.exif.dateTimeOriginal, 'yyyy.MM.dd HH:mm')}">2026.07.15 20:30</dd>
+          </div>
+        </dl>
+      </figcaption>
+    </figure>
+
+    <nav class="photo-stepper" aria-label="前后照片">
+      <a
+        class="photo-stepper__edge photo-stepper__edge--previous"
+        th:if="${prev != null}"
+        th:href="@{${photoUrl.detail(prev)}}"
+        th:title="${prev.spec.displayName}"
+        aria-keyshortcuts="ArrowLeft"
+        data-photo-previous
+      >
+        <span>← 上一张</span>
+        <strong th:text="${#strings.isEmpty(prev.spec.displayName) ? '未命名照片' : prev.spec.displayName}">上一张照片</strong>
+      </a>
+      <span class="photo-stepper__edge is-disabled" th:if="${prev == null}" aria-hidden="true"></span>
+      <span class="photo-stepper__counter" th:text="|${position} / ${total}|">1 / 5</span>
+      <a
+        class="photo-stepper__edge photo-stepper__edge--next"
+        th:if="${next != null}"
+        th:href="@{${photoUrl.detail(next)}}"
+        th:title="${next.spec.displayName}"
+        aria-keyshortcuts="ArrowRight"
+        data-photo-next
+      >
+        <span>下一张 →</span>
+        <strong th:text="${#strings.isEmpty(next.spec.displayName) ? '未命名照片' : next.spec.displayName}">下一张照片</strong>
+      </a>
+      <span class="photo-stepper__edge is-disabled" th:if="${next == null}" aria-hidden="true"></span>
+    </nav>
+
+    <nav class="photo-filmstrip" aria-label="相邻照片" th:if="${not #lists.isEmpty(neighbors)}">
+      <div class="photo-filmstrip__track">
+        <a
+          th:each="neighbor : ${neighbors}"
+          th:with="neighborImage=${not #strings.isEmpty(neighbor.spec.cover) ? neighbor.spec.cover : neighbor.spec.url}"
+          th:href="@{${photoUrl.detail(neighbor)}}"
+          th:classappend="${neighbor.metadata.name == photo.metadata.name} ? ' is-current' : ''"
+          th:attr="aria-current=${neighbor.metadata.name == photo.metadata.name ? 'true' : null}"
+          th:aria-label="|查看照片：${#strings.isEmpty(neighbor.spec.displayName) ? '未命名照片' : neighbor.spec.displayName}|"
+        >
+          <img
+            th:src="${thumbnail.gen(neighborImage, 's')}"
+            th:alt="${#strings.isEmpty(neighbor.spec.displayName) ? '相邻照片' : neighbor.spec.displayName}"
+            loading="lazy"
+            decoding="async"
+          />
+          <span th:text="${#strings.isEmpty(neighbor.spec.displayName) ? '未命名照片' : neighbor.spec.displayName}">照片名称</span>
+        </a>
+      </div>
+    </nav>
+  </article>
+
+  <section class="comment-shell photo-comment-shell container" th:if="${haloCommentEnabled}">
+    <h2>照片留言</h2>
+    <halo:comment group="core.halo.run" kind="Photo" th:attr="name=${photo.metadata.name}" />
+  </section>
+</include>

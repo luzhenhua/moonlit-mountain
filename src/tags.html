@@ -1,0 +1,30 @@
+<include src="layout.html">
+  <template name="head">
+    <title th:text="|标签 - ${site.title}|">标签 - 山月记</title>
+  </template>
+
+  <section class="listing-page container">
+    <header class="listing-hero">
+      <p class="eyebrow">TAGS</p>
+      <h1>全部标签</h1>
+      <p>一些反复出现、值得继续追问的词。</p>
+    </header>
+
+    <p class="empty-state" th:if="${#lists.isEmpty(tags)}">还没有文章标签。</p>
+
+    <ul class="tag-cloud" role="list">
+      <li th:each="tag : ${tags}">
+        <a
+          class="tag-chip"
+          th:href="@{${tag.status.permalink}}"
+          th:style="|--taxonomy-color: ${tag.spec.color ?: '#a78bfa'}|"
+        >
+          <span class="tag-chip__dot" aria-hidden="true"></span>
+          <span th:text="|# ${tag.spec.displayName}|"># 标签</span>
+          <small th:text="|${tag.postCount} 篇|">0 篇</small>
+        </a>
+      </li>
+    </ul>
+
+  </section>
+</include>

@@ -1,0 +1,219 @@
+<include src="layout.html">
+  <template name="head">
+    <title th:text="${site.title}">山月记</title>
+  </template>
+
+  <section class="hero container" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <h1 id="hero-title">
+        <span>欢迎来到</span>
+        <strong th:text="${site.title}">山月记</strong>
+      </h1>
+      <p th:text="${site.subtitle ?: site.seo.description}">
+        在山月之间，记录技术、创作与日常的回声。
+      </p>
+      <div class="hero-actions">
+        <a class="button button--primary" th:href="@{${site.routes.archivesUri}}">阅读文章</a>
+        <a class="button button--secondary" th:href="@{${site.routes.categoriesUri}}">浏览分类</a>
+      </div>
+    </div>
+
+    <div class="hero-media">
+      <div class="hero-orbit">
+        <img
+          src="./assets/images/moonlit-mountain-hero.jpg"
+          th:src="${not #strings.isEmpty(theme.config?.home?.hero_image) ? theme.config.home.hero_image : #theme.assets('/images/moonlit-mountain-hero.jpg')}"
+          th:alt="|${site.title} 站点图像|"
+        />
+      </div>
+    </div>
+  </section>
+
+  <th:block th:with="pinnedPosts = ${posts.items.?[spec.pinned]}">
+    <section class="cover-strip" aria-label="置顶文章" th:if="${not #lists.isEmpty(pinnedPosts)}">
+      <div class="cover-strip__track">
+        <div class="cover-strip__set">
+          <a
+            class="cover-tile"
+            th:each="post : ${pinnedPosts}"
+            th:href="@{${post.status.permalink}}"
+          >
+            <img
+              th:src="${(not #strings.isEmpty(post.spec.cover) and post.spec.cover != '0') ? post.spec.cover : #theme.assets('/images/moonlit-mountain-hero.jpg')}"
+              th:alt="${post.spec.title}"
+              loading="lazy"
+            />
+          </a>
+        </div>
+        <div class="cover-strip__set" aria-hidden="true">
+          <span class="cover-tile" th:each="post : ${pinnedPosts}">
+            <img
+              th:src="${(not #strings.isEmpty(post.spec.cover) and post.spec.cover != '0') ? post.spec.cover : #theme.assets('/images/moonlit-mountain-hero.jpg')}"
+              alt=""
+              loading="lazy"
+            />
+          </span>
+        </div>
+      </div>
+    </section>
+  </th:block>
+
+  <section
+    class="story-grid container section"
+    aria-labelledby="about-title"
+    th:with="
+      aboutPageName = ${theme.config?.home?.about_page},
+      aboutPage = ${#strings.isEmpty(aboutPageName) ? null : singlePageFinder.getByName(aboutPageName)}
+    "
+  >
+    <article class="panel panel--wide dot-surface" data-reveal>
+      <p class="eyebrow">ABOUT</p>
+      <th:block th:if="${aboutPage != null}">
+        <h2 id="about-title" th:text="${aboutPage.spec.title}">关于这里</h2>
+        <p
+          class="about-copy"
+          th:text="${not #strings.isEmpty(aboutPage.status.excerpt) ? aboutPage.status.excerpt : site.subtitle}"
+        >
+          了解这个站点。
+        </p>
+        <a class="panel-more" th:href="@{${aboutPage.status.permalink}}">了解更多</a>
+      </th:block>
+      <th:block th:if="${aboutPage == null}">
+        <h2 id="about-title" th:text="${site.title}">关于这里</h2>
+        <p class="about-copy" th:text="${site.subtitle ?: site.seo.description}">
+          一处用来沉淀值得反复阅读的文字、作品与片刻的数字居所。
+        </p>
+        <a class="panel-more" th:href="@{${site.routes.archivesUri}}">开始阅读</a>
+      </th:block>
+    </article>
+
+    <aside class="panel topic-panel" aria-labelledby="topics-title" th:with="topicPage = ${categoryFinder.list(1, 6)}" data-reveal>
+      <p class="eyebrow">COLLECTIONS</p>
+      <h2 id="topics-title">内容专题</h2>
+      <ul class="topic-list" th:if="${not #lists.isEmpty(topicPage.items)}">
+        <li th:each="category, stat : ${topicPage.items}">
+          <a th:href="@{${category.status.permalink}}">
+            <span class="topic-list__mark" th:text="|0${stat.count}|">01</span>
+            <span class="topic-list__copy">
+              <strong th:text="${category.spec.displayName}">分类</strong>
+              <small th:text="|${category.postCount} 篇文章|">0 篇文章</small>
+            </span>
+            <span class="topic-list__arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      </ul>
+      <p th:if="${#lists.isEmpty(topicPage.items)}">分类会在这里形成你的内容地图。</p>
+    </aside>
+
+    <aside class="panel skills-panel" aria-labelledby="keywords-title" th:with="tagPage = ${tagFinder.list(1, 8)}" data-reveal>
+      <div>
+        <p class="eyebrow">KEYWORDS</p>
+        <h2 id="keywords-title">内容标签</h2>
+        <p class="skills-intro" th:text="${site.subtitle ?: '通过标签发现站点中反复出现的主题。'}">
+          通过标签发现站点中反复出现的主题。
+        </p>
+      </div>
+      <ul class="skill-list" role="list" th:if="${not #lists.isEmpty(tagPage.items)}">
+        <li
+          th:each="tag : ${tagPage.items}"
+          th:style="|--taxonomy-color: ${tag.spec.color ?: '#a78bfa'}|"
+        >
+          <a th:href="@{${tag.status.permalink}}" th:text="${tag.spec.displayName}">标签</a>
+        </li>
+      </ul>
+      <p th:if="${#lists.isEmpty(tagPage.items)}">标签会随着内容一起生长。</p>
+    </aside>
+  </section>
+
+  <section
+    class="section container featured-section"
+    aria-labelledby="work-title"
+    th:with="
+      featuredCategoryName = ${theme.config?.home?.featured_category},
+      featuredCategory = ${#strings.isEmpty(featuredCategoryName) ? null : categoryFinder.getByName(featuredCategoryName)},
+      featuredPosts = ${featuredCategory == null ? posts : postFinder.list({page: 1, size: 8, categoryName: featuredCategoryName})}
+    "
+  >
+    <header class="section-heading" data-reveal>
+      <div>
+        <p class="eyebrow">FEATURED STORIES</p>
+        <h2
+          id="work-title"
+          th:text="${featuredCategory != null ? featuredCategory.spec.displayName : '近期文章'}"
+        >近期文章</h2>
+        <p
+          th:text="${featuredCategory != null and not #strings.isEmpty(featuredCategory.spec.description) ? featuredCategory.spec.description : '记录最新的实践、阅读与生活切片。'}"
+        >记录最新的实践、阅读与生活切片。</p>
+      </div>
+      <a
+        class="text-link"
+        th:href="@{${featuredCategory != null ? featuredCategory.status.permalink : site.routes.archivesUri + '/'}}"
+        th:text="${featuredCategory != null ? '查看该分类' : '查看全部文章'}"
+      >查看全部文章</a>
+    </header>
+
+    <div class="featured-grid" th:if="${not #lists.isEmpty(featuredPosts.items)}">
+      <article
+        class="featured-card"
+        th:each="post, stat : ${featuredPosts.items}"
+        data-reveal
+        th:style="|--card-accent: ${stat.index % 4 == 0 ? '#8b5cf6' : (stat.index % 4 == 1 ? '#fb7185' : (stat.index % 4 == 2 ? '#7073f3' : '#10b981'))}; --reveal-delay: ${stat.index % 2 * 70}ms;|"
+      >
+        <span class="featured-card__glow" aria-hidden="true"></span>
+        <div class="featured-card__body">
+          <p class="post-meta">
+            <time th:text="${#temporals.format(post.spec.publishTime, 'yyyy.MM.dd')}">2026.07.10</time>
+            <span th:if="${not #lists.isEmpty(post.categories)}">
+              · <span th:text="${post.categories[0].spec.displayName}">随笔</span>
+            </span>
+          </p>
+          <h3><a th:href="@{${post.status.permalink}}" th:text="${post.spec.title}">文章标题</a></h3>
+          <p th:text="${post.status.excerpt}">文章摘要</p>
+          <div class="featured-card__actions">
+            <a class="button button--primary button--small" th:href="@{${post.status.permalink}}">阅读文章</a>
+            <a
+              class="button button--ghost button--small"
+              th:if="${not #lists.isEmpty(post.categories)}"
+              th:href="@{${post.categories[0].status.permalink}}"
+              th:text="${post.categories[0].spec.displayName}"
+            >分类</a>
+          </div>
+        </div>
+        <a class="featured-card__media" th:href="@{${post.status.permalink}}" tabindex="-1">
+          <img
+            th:src="${(not #strings.isEmpty(post.spec.cover) and post.spec.cover != '0') ? post.spec.cover : #theme.assets('/images/moonlit-mountain-hero.jpg')}"
+            th:alt="${post.spec.title}"
+            loading="lazy"
+          />
+        </a>
+      </article>
+    </div>
+    <p class="empty-state" th:if="${#lists.isEmpty(featuredPosts.items)}">还没有文章，先写下第一篇吧。</p>
+    <th:block th:if="${featuredCategory == null}">
+      <include src="pagination.html"></include>
+    </th:block>
+  </section>
+
+  <th:block
+    th:with="
+      contactPageName = ${theme.config?.home?.contact_page},
+      contactPage = ${#strings.isEmpty(contactPageName) ? null : singlePageFinder.getByName(contactPageName)}
+    "
+  >
+    <section
+      class="contact-cta container section"
+      aria-labelledby="contact-title"
+      data-reveal
+      th:if="${contactPage != null}"
+    >
+      <div>
+        <p class="eyebrow">CONTACT</p>
+        <h2 id="contact-title" th:text="${contactPage.spec.title}">联系我们</h2>
+        <p th:text="${not #strings.isEmpty(contactPage.status.excerpt) ? contactPage.status.excerpt : site.subtitle}">
+          欢迎从这里开始一次对话。
+        </p>
+      </div>
+      <a class="button button--primary" th:href="@{${contactPage.status.permalink}}">查看详情</a>
+    </section>
+  </th:block>
+</include>

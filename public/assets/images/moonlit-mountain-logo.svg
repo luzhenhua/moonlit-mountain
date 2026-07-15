@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="moonlit-mountain-title moonlit-mountain-description">
+  <title id="moonlit-mountain-title">山月记</title>
+  <desc id="moonlit-mountain-description">A golden moon rising above layered blue mountains in a midnight sky.</desc>
+  <defs>
+    <linearGradient id="night" x1="18" y1="10" x2="112" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#26305F"/>
+      <stop offset=".55" stop-color="#151933"/>
+      <stop offset="1" stop-color="#090B18"/>
+    </linearGradient>
+    <radialGradient id="sky-glow" cx="0" cy="0" r="1" gradientTransform="translate(84 38) rotate(90) scale(55)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="moon" x1="70" y1="22" x2="101" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7D6"/>
+      <stop offset=".58" stop-color="#FACC15"/>
+      <stop offset="1" stop-color="#FB923C"/>
+    </linearGradient>
+    <linearGradient id="far-mountain" x1="34" y1="53" x2="86" y2="103" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/>
+      <stop offset=".48" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="near-mountain" x1="18" y1="74" x2="104" y2="115" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E3A5F"/>
+      <stop offset=".58" stop-color="#172554"/>
+      <stop offset="1" stop-color="#11142A"/>
+    </linearGradient>
+    <clipPath id="tile">
+      <rect x="5" y="5" width="118" height="118" rx="31"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <rect x="5" y="5" width="118" height="118" fill="url(#night)"/>
+    <rect x="5" y="5" width="118" height="118" fill="url(#sky-glow)"/>
+
+    <circle cx="84" cy="38" r="18" fill="url(#moon)"/>
+    <circle cx="78" cy="33" r="3.2" fill="#FFF7D6" fill-opacity=".42"/>
+    <circle cx="90" cy="43" r="2.2" fill="#D97706" fill-opacity=".18"/>
+    <circle cx="29" cy="27" r="2.1" fill="#E0F2FE"/>
+    <path d="M46 22v7M42.5 25.5h7" stroke="#C4B5FD" stroke-width="2.2" stroke-linecap="round"/>
+
+    <path d="M11 102 45 61l14 17 10-11 22 27 11-12 21 24v17H5v-14Z" fill="url(#far-mountain)" opacity=".9"/>
+    <path d="m45 61 8 10 6 7-8-3-4 5-7-6Z" fill="#E0F2FE" fill-opacity=".82"/>
+    <path d="m69 67 8 10 5 7-8-3-4 5-6-7Z" fill="#E0F2FE" fill-opacity=".48"/>
+
+    <path d="M5 112 31 87l14 13 18-25 17 21 10-9 33 26v15H5Z" fill="url(#near-mountain)"/>
+    <path d="m63 75 9 11 8 10-10-5-5 5-8-8Z" fill="#93C5FD" fill-opacity=".56"/>
+    <path d="M5 116c19-8 35-7 53-1 20 7 42 5 65-5v18H5Z" fill="#090B18" fill-opacity=".9"/>
+  </g>
+
+  <rect x="5.75" y="5.75" width="116.5" height="116.5" rx="30.25" fill="none" stroke="#fff" stroke-opacity=".1" stroke-width="1.5"/>
+</svg>

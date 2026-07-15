@@ -1,0 +1,88 @@
+<include src="layout.html">
+  <template name="head">
+    <title th:text="|${title ?: '图库'} - ${site.title}|">图库 - 山月记</title>
+  </template>
+
+  <section class="photo-gallery container">
+    <header class="photo-gallery__hero">
+      <div>
+        <p class="eyebrow">影像档案</p>
+        <h1 th:text="${title ?: '图库'}">图库</h1>
+        <p>把光、天气与路途，收进一格格可回看的底片。</p>
+      </div>
+      <p class="photo-gallery__count" th:if="${photos.total > 0}">
+        <strong th:text="${photos.total}">20</strong>
+        <span>帧影像</span>
+      </p>
+    </header>
+
+    <th:block th:if="${pluginFinder.available('PluginPhotos', '>=2.0.0')}">
+      <nav class="photo-filters" aria-label="图库分组" th:if="${not #lists.isEmpty(groups)}">
+        <a class="photo-filter" th:href="@{${photoUrl.list('', 1, photos.size)}}" data-photo-filter data-photo-group="">
+          <span>全部</span>
+        </a>
+        <a
+          class="photo-filter"
+          th:each="group : ${groups}"
+          th:href="@{${photoUrl.list(group.metadata.name, 1, photos.size)}}"
+          th:attr="data-photo-group=${group.metadata.name}"
+          data-photo-filter
+        >
+          <span th:text="${group.spec.displayName}">分组</span>
+          <small th:text="${group.status?.photoCount ?: 0}">0</small>
+        </a>
+      </nav>
+
+      <div class="photo-wall" th:if="${not #lists.isEmpty(photos.items)}">
+        <a
+          class="photo-card"
+          th:each="photo, photoStat : ${photos.items}"
+          th:with="imageUrl=${not #strings.isEmpty(photo.spec.cover) ? photo.spec.cover : photo.spec.url}"
+          th:href="@{${photoUrl.detail(photo)}}"
+          th:aria-label="|查看照片：${#strings.isEmpty(photo.spec.displayName) ? '未命名照片' : photo.spec.displayName}|"
+          data-reveal
+        >
+          <span class="photo-card__media">
+            <img
+              src="./assets/images/moonlit-mountain-hero.jpg"
+              th:src="${thumbnail.gen(imageUrl, 'm')}"
+              th:srcset="|${thumbnail.gen(imageUrl, 's')} 400w, ${thumbnail.gen(imageUrl, 'm')} 800w, ${thumbnail.gen(imageUrl, 'l')} 1200w|"
+              sizes="(max-width: 639px) calc(100vw - 64px), (max-width: 1023px) 46vw, 25vw"
+              th:alt="${#strings.isEmpty(photo.spec.displayName) ? '图库照片' : photo.spec.displayName}"
+              th:attr="width=${photo.exif != null ? photo.exif.imageWidth : null},height=${photo.exif != null ? photo.exif.imageHeight : null},loading=${photoStat.index < 3 ? 'eager' : 'lazy'},fetchpriority=${photoStat.first ? 'high' : null}"
+              decoding="async"
+            />
+            <span class="photo-card__frame" th:text="|FRAME ${#numbers.formatInteger(photoStat.count, 2)}|">FRAME 01</span>
+            <span class="photo-card__overlay">
+              <strong th:text="${#strings.isEmpty(photo.spec.displayName) ? '未命名照片' : photo.spec.displayName}">照片名称</strong>
+              <span class="photo-card__exif" th:if="${photo.exif != null}">
+                <span th:if="${not #strings.isEmpty(photo.exif.model)}" th:text="${photo.exif.model}">相机</span>
+                <span th:if="${photo.exif.fNumber != null}" th:text="|f/${photo.exif.fNumber}|">f/2.8</span>
+                <span th:if="${photo.exif.focalLength != null}" th:text="|${photo.exif.focalLength}mm|">50mm</span>
+              </span>
+            </span>
+          </span>
+        </a>
+      </div>
+
+      <div class="empty-state photo-empty" th:if="${#lists.isEmpty(photos.items)}">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M4 6.5h16v11H4zM8 6.5l1.4-2h5.2l1.4 2M8 13l2.2-2.2 2.1 2.1 1.5-1.5L18 15.5M16.5 9.5h.01" />
+        </svg>
+        <h2>还没有照片</h2>
+        <p>从 Halo 控制台的“图库”上传第一张照片，这里会自动出现。</p>
+      </div>
+
+      <nav class="pagination photo-pagination" aria-label="图库分页" th:if="${photos.hasPrevious() || photos.hasNext()}">
+        <a th:if="${photos.hasPrevious()}" th:href="@{${photos.prevUrl}}" rel="prev">← 上一页</a>
+        <span><strong th:text="${photos.page}">1</strong> / <span th:text="${photos.totalPages}">1</span></span>
+        <a th:if="${photos.hasNext()}" th:href="@{${photos.nextUrl}}" rel="next">下一页 →</a>
+      </nav>
+    </th:block>
+
+    <div class="empty-state photo-empty" th:unless="${pluginFinder.available('PluginPhotos', '>=2.0.0')}">
+      <h2>图库插件需要更新</h2>
+      <p>山月记的完整图库体验需要官方图库插件 2.0.0 或更高版本。</p>
+    </div>
+  </section>
+</include>

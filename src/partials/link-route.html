@@ -1,0 +1,82 @@
+<li
+  class="link-route-item"
+  th:with="
+    linkName = ${#strings.isEmpty(link.spec.displayName) ? '未命名站点' : link.spec.displayName},
+    linkUrl = ${link.spec.url ?: ''},
+    linkLogo = ${link.spec.logo ?: ''},
+    linkDescription = ${link.spec.description ?: ''},
+    accessState = ${link.status?.verification?.access?.state?.name() ?: ''}
+  "
+>
+  <a
+    class="link-route"
+    th:href="@{${linkUrl}}"
+    target="_blank"
+    rel="noopener noreferrer external"
+    th:aria-label="|访问 ${linkName}（在新标签页打开）|"
+  >
+    <span class="link-route__source">
+      <span
+        class="link-route__mark"
+        data-link-logo-shell
+        th:classappend="${#strings.isEmpty(linkLogo)} ? ' is-fallback'"
+      >
+        <img
+          th:if="${not #strings.isEmpty(linkLogo)}"
+          th:src="${linkLogo}"
+          alt=""
+          width="18"
+          height="18"
+          loading="lazy"
+          decoding="async"
+          data-link-logo
+        />
+        <span class="link-route__fallback" aria-hidden="true" th:text="${#strings.substring(linkName, 0, 1)}">山</span>
+      </span>
+      <span class="link-route__coordinate" th:text="${linkUrl}" data-link-domain>example.com</span>
+      <span
+        class="link-route__status"
+        th:if="${not #strings.isEmpty(accessState)}"
+        th:classappend="${accessState == 'ACCESSIBLE' ? ' is-accessible' : (accessState == 'CHECKING' ? ' is-checking' : ' is-inaccessible')}"
+      >
+        <span aria-hidden="true"></span>
+        <span th:text="${accessState == 'ACCESSIBLE' ? '可抵达' : (accessState == 'CHECKING' ? '探路中' : '暂不可达')}">可抵达</span>
+      </span>
+    </span>
+
+    <span class="link-route__copy">
+      <strong class="link-route__title" th:text="${linkName}">站点名称</strong>
+      <span
+        class="link-route__description"
+        th:if="${not #strings.isEmpty(linkDescription)}"
+        th:text="${linkDescription}"
+      >站点简介</span>
+    </span>
+
+    <span class="link-route__cta" aria-hidden="true">
+      <span>访问</span>
+      <svg viewBox="0 0 24 24"><path d="M17 7 7 17M8 7h9v9" /></svg>
+    </span>
+
+    <span
+      class="link-route__art"
+      data-link-logo-shell
+      aria-hidden="true"
+      th:classappend="${#strings.isEmpty(linkLogo)} ? ' is-fallback'"
+    >
+      <img
+        th:if="${not #strings.isEmpty(linkLogo)}"
+        th:src="${linkLogo}"
+        alt=""
+        width="128"
+        height="128"
+        loading="lazy"
+        decoding="async"
+        data-link-logo
+      />
+      <span class="link-route__fallback" th:text="${#strings.substring(linkName, 0, 1)}">山</span>
+    </span>
+    <span class="link-route__spectral-line" aria-hidden="true"></span>
+    <span class="sr-only">在新标签页打开</span>
+  </a>
+</li>

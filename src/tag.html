@@ -1,0 +1,23 @@
+<include src="layout.html">
+  <template name="head">
+    <title th:text="|${tag.spec.displayName} - ${site.title}|">标签 - 山月记</title>
+  </template>
+
+  <section class="listing-page container">
+    <header
+      class="listing-hero tag-archive-hero"
+      th:style="|--taxonomy-color: ${tag.spec.color ?: '#a78bfa'}|"
+    >
+      <p class="eyebrow">TAG</p>
+      <h1 class="tag-archive-title">
+        <span class="tag-chip__dot" aria-hidden="true"></span>
+        <span th:text="|# ${tag.spec.displayName}|"># 标签</span>
+      </h1>
+    </header>
+    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}">这个标签暂时没有文章。</p>
+    <ul class="post-list">
+      <include src="post-card.html"></include>
+    </ul>
+    <include src="pagination.html"></include>
+  </section>
+</include>

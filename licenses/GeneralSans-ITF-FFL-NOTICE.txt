@@ -1,0 +1,15 @@
+Font Family: General Sans
+Designed by: Frode Helland
+Copyright (c) 2023 Indian Type Foundry
+
+Official font page:
+https://www.fontshare.com/fonts/general-sans
+
+License:
+ITF Free Font License (FFL)
+https://www.fontshare.com/licenses/itf-ffl
+
+Bundled styles:
+- General Sans Regular
+- General Sans Medium
+- General Sans Semibold

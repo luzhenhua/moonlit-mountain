@@ -1,0 +1,21 @@
+apiVersion: theme.halo.run/v1alpha1
+kind: Theme
+metadata:
+  name: moonlit-mountain
+spec:
+  displayName: 山月记
+  author:
+    name: dingdangmaoup
+    website: https://github.com/DINGDANGMAOUP
+  description: 一款克制、沉静、以 Halo 原生内容与导航体系为中心的深色主题
+  logo: /themes/moonlit-mountain/assets/images/moonlit-mountain-logo.svg
+  homepage: https://github.com/DINGDANGMAOUP/moonlit-mountain
+  repo: https://github.com/DINGDANGMAOUP/moonlit-mountain.git
+  issues: https://github.com/DINGDANGMAOUP/moonlit-mountain/issues
+  settingName: "moonlit-mountain-setting"
+  configMapName: "moonlit-mountain-config"
+  version: 0.0.1
+  requires: ">=2.22.0"
+  license:
+    - name: MIT
+      url: https://github.com/DINGDANGMAOUP/moonlit-mountain/blob/main/LICENSE

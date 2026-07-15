@@ -1,0 +1,71 @@
+<footer
+  class="site-footer dot-surface"
+  th:with="
+    icpNumber = ${theme.config?.footer?.icp_number ?: ''},
+    configuredIcpUrl = ${theme.config?.footer?.icp_url ?: ''},
+    icpUrlLower = ${#strings.toLowerCase(configuredIcpUrl)},
+    icpUrl = ${#strings.startsWith(icpUrlLower, 'https://') or #strings.startsWith(icpUrlLower, 'http://') ? configuredIcpUrl : 'https://beian.miit.gov.cn/'},
+    publicSecurityNumber = ${theme.config?.footer?.public_security_number ?: ''},
+    configuredPublicSecurityUrl = ${theme.config?.footer?.public_security_url ?: ''},
+    publicSecurityUrlLower = ${#strings.toLowerCase(configuredPublicSecurityUrl)},
+    publicSecurityUrl = ${#strings.startsWith(publicSecurityUrlLower, 'https://') or #strings.startsWith(publicSecurityUrlLower, 'http://') ? configuredPublicSecurityUrl : 'https://beian.mps.gov.cn/#/query/webSearch'},
+    publicSecurityIcon = ${theme.config?.footer?.public_security_icon ?: ''}
+  "
+>
+  <span class="site-footer__corner site-footer__corner--left" aria-hidden="true"></span>
+  <span class="site-footer__corner site-footer__corner--right" aria-hidden="true"></span>
+  <div class="container footer-grid">
+    <p class="footer-copyright">
+      <span>©</span>
+      <span th:text="${#temporals.year(#temporals.createNow())}">2026</span>
+      <span class="footer-copyright__separator" aria-hidden="true">·</span>
+      <span th:text="${site.title}">山月记</span>
+    </p>
+    <ul
+      class="footer-filings"
+      role="list"
+      aria-label="网站备案信息"
+      th:if="${not #strings.isEmpty(icpNumber) or not #strings.isEmpty(publicSecurityNumber)}"
+    >
+      <li th:if="${not #strings.isEmpty(icpNumber)}">
+        <a
+          class="footer-filing footer-filing--icp"
+          th:href="@{${icpUrl}}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="footer-filing__monogram" aria-hidden="true">ICP</span>
+          <span th:text="${icpNumber}">京ICP备12345678号-1</span>
+        </a>
+      </li>
+      <li th:if="${not #strings.isEmpty(publicSecurityNumber)}">
+        <a
+          class="footer-filing footer-filing--public-security"
+          th:href="@{${publicSecurityUrl}}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            class="footer-filing__icon"
+            th:if="${not #strings.isEmpty(publicSecurityIcon)}"
+            th:src="${publicSecurityIcon}"
+            alt=""
+            width="16"
+            height="16"
+          />
+          <svg
+            class="footer-filing__icon"
+            th:if="${#strings.isEmpty(publicSecurityIcon)}"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 3 5.5 5.6v5.3c0 4.3 2.7 8.1 6.5 9.3 3.8-1.2 6.5-5 6.5-9.3V5.6L12 3Z" />
+            <path d="m12 7 1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5L11 9Z" />
+          </svg>
+          <span th:text="${publicSecurityNumber}">京公网安备 11010502030143 号</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <halo:footer />
+</footer>

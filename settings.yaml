@@ -1,0 +1,110 @@
+apiVersion: v1alpha1
+kind: Setting
+metadata:
+  name: moonlit-mountain-setting
+spec:
+  forms:
+    - group: home
+      label: 首页内容
+      formSchema:
+        - $formkit: attachment
+          name: hero_image
+          label: Hero 图片
+          help: 留空时使用主题内置图片
+          accepts:
+            - image/*
+          value: ""
+        - $formkit: singlePageSelect
+          name: about_page
+          label: 关于页面
+          help: 选中页面的标题、摘要和链接会用于首页介绍
+          clearable: true
+          autoSelect: false
+          value: ""
+        - $formkit: categorySelect
+          name: featured_category
+          label: 精选分类
+          help: 留空时展示当前首页文章
+          clearable: true
+          autoSelect: false
+          value: ""
+        - $formkit: singlePageSelect
+          name: contact_page
+          label: 联系页面
+          help: 选中后在首页展示联系入口，留空则不显示
+          clearable: true
+          autoSelect: false
+          value: ""
+    - group: navigation
+      label: 导航
+      formSchema:
+        - $formkit: array
+          name: social_media
+          label: 社交媒体
+          help: 拖动调整顶部右侧的显示顺序；图片类型请填写 Halo 附件地址
+          value: []
+          max: 5
+          addLabel: 添加
+          emptyText: 暂未配置社交媒体
+          itemLabels:
+            - type: text
+              label: "$value.name"
+            - type: text
+              label: "$value.url"
+          children:
+            - $formkit: iconify
+              name: icon
+              label: 图标
+              format: dataurl
+              validation: required
+            - $formkit: text
+              name: name
+              label: 名称
+              value: ""
+              validation: required
+            - $formkit: text
+              name: url
+              label: 链接
+              help: 支持 http(s)://、mailto:、站内路径或 Halo 附件地址；其他协议不会在前台渲染
+              value: ""
+              validation: required
+            - $formkit: select
+              name: url_type
+              label: 链接类型
+              value: normal
+              clearable: false
+              options:
+                - label: 跳转链接
+                  value: normal
+                - label: 图片
+                  value: image
+    - group: footer
+      label: 页脚与备案
+      formSchema:
+        - $formkit: text
+          name: icp_number
+          label: ICP备案号
+          help: 填写完整备案号，例如“京ICP备12345678号-1”；留空时不显示
+          value: ""
+        - $formkit: url
+          name: icp_url
+          label: ICP备案跳转链接
+          help: 可填写备案详情或查询地址；留空或协议不安全时使用工信部备案系统
+          value: "https://beian.miit.gov.cn/"
+        - $formkit: text
+          name: public_security_number
+          label: 公安联网备案号
+          help: 填写完整备案号，例如“京公网安备 11010502030143 号”；留空时不显示
+          value: ""
+        - $formkit: url
+          name: public_security_url
+          label: 公安联网备案跳转链接
+          help: 可填写备案详情或查询地址；留空或协议不安全时使用全国互联网安全管理服务平台
+          value: "https://beian.mps.gov.cn/#/query/webSearch"
+        - $formkit: attachment
+          name: public_security_icon
+          label: 公安备案图标
+          help: 可上传备案平台提供的图标；留空时使用主题内置的单色盾牌图标
+          accepts:
+            - image/*
+          value: ""

@@ -1,0 +1,19 @@
+<li class="post-card" th:each="post : ${posts.items}">
+  <a class="post-card__media" th:href="@{${post.status.permalink}}" tabindex="-1">
+    <img
+      th:src="${(not #strings.isEmpty(post.spec.cover) and post.spec.cover != '0') ? post.spec.cover : #theme.assets('/images/moonlit-mountain-hero.jpg')}"
+      th:alt="${post.spec.title}"
+      loading="lazy"
+    />
+  </a>
+  <div class="post-card__body">
+    <p class="post-meta">
+      <time th:text="${#temporals.format(post.spec.publishTime, 'yyyy.MM.dd')}">2026.07.10</time>
+      <span th:if="${not #lists.isEmpty(post.categories)}">
+        · <span th:text="${post.categories[0].spec.displayName}">随笔</span>
+      </span>
+    </p>
+    <h2><a th:href="@{${post.status.permalink}}" th:text="${post.spec.title}">文章标题</a></h2>
+    <p class="post-card__excerpt" th:text="${post.status.excerpt}">文章摘要</p>
+  </div>
+</li>
