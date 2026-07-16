@@ -94,8 +94,7 @@ corepack pnpm build
 
 文章封面、正文图片和演示内容素材应上传到 Halo 附件库，并在内容中引用附件地址；主题包只保留版式运行所需的默认图片，避免内容资源与特定主题绑定。
 
-## 版本与授权
+## 授权
 
-当前版本：`0.0.1`
 
 项目使用 [MIT License](LICENSE)，作者为 [dingdangmaoup](https://github.com/dingdangmaoup)。第三方字体和图标的授权信息见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

@@ -133,7 +133,6 @@
           <a
             th:href="@{/moments(tag=${tag})}"
             th:text="${tag}"
-            th:attr="aria-current=${#lists.contains(param.tag, tag) ? 'page' : null}"
           >标签</a>
         </li>
       </ul>
