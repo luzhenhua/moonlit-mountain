@@ -2044,6 +2044,15 @@ body[data-template="archives"] .listing-hero > p:last-child {
   border: 0;
 }
 
+/* JetBrains install badges are compact controls, not full-width media embeds. */
+.article-content iframe[src*="plugins.jetbrains.com/embeddable/install/"] {
+  width: min(245px, 100%);
+  height: 48px;
+  min-height: 0;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
 .article-content blockquote {
   margin: 2em 0;
   padding: 1.1em 1.4em;
@@ -3430,6 +3439,14 @@ body[data-template="archives"] .listing-hero > p:last-child {
   width: 100%;
   min-height: 280px;
   border: 0;
+}
+
+.moment-entry__content iframe[src*="plugins.jetbrains.com/embeddable/install/"] {
+  width: min(245px, 100%);
+  height: 48px;
+  min-height: 0;
+  border-radius: 999px;
+  vertical-align: middle;
 }
 
 .moment-media {
