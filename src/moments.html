@@ -1,15 +1,15 @@
 <include src="layout.html">
   <template name="head">
-    <title th:text="|${title ?: '瞬间'} - ${site.title}|">瞬间 - 山月记</title>
+    <title th:text="|${title ?: #messages.msg('page.moments.title')} - ${site.title}|"></title>
   </template>
 
   <section class="moment-page">
     <header class="moment-page__hero">
-      <h1>我的瞬间</h1>
-      <p>一路记录下来的片刻，有些直到今天仍在发光。</p>
+      <h1 th:text="#{page.moments.heading}"></h1>
+      <p th:text="#{page.moments.description}"></p>
       <p class="moment-page__filter-state" th:if="${not #lists.isEmpty(param.tag)}">
-        <span th:text="|正在浏览 #${param.tag[0]}|">正在浏览 #标签</span>
-        <a th:href="@{/moments}">查看全部</a>
+        <span th:text="${#messages.msg('page.moments.filtering', param.tag[0])}"></span>
+        <a th:href="@{/moments}" th:text="#{page.moments.viewAll}"></a>
       </p>
     </header>
 
@@ -34,7 +34,6 @@
                 th:id="|moments-${#temporals.format(yearSourceTime, 'yyyy')}-title|"
                 th:text="${#temporals.format(yearSourceTime, 'yyyy')}"
               >
-                2026
               </h2>
             </header>
 
@@ -58,20 +57,29 @@
 
       <div class="empty-state moment-empty" th:if="${#lists.isEmpty(moments.items)}">
         <span class="moment-empty__signal" aria-hidden="true"><span></span></span>
-        <h2>这一段时间还很安静</h2>
-        <p>从 Halo 控制台发布第一条瞬间，短句、图片、声音与视频都会在这里按年份展开。</p>
+        <h2 th:text="#{page.moments.empty.title}"></h2>
+        <p th:text="#{page.moments.empty.description}"></p>
       </div>
 
-      <nav class="pagination moment-pagination" aria-label="瞬间分页" th:if="${moments.hasPrevious() || moments.hasNext()}">
-        <a th:if="${moments.hasPrevious()}" th:href="@{${moments.prevUrl}}" rel="prev">上一页</a>
-        <span><strong th:text="${moments.page}">1</strong> / <span th:text="${moments.totalPages}">1</span></span>
-        <a th:if="${moments.hasNext()}" th:href="@{${moments.nextUrl}}" rel="next">下一页</a>
+      <nav
+        class="pagination moment-pagination"
+        th:aria-label="#{page.moments.pagination.ariaLabel}"
+        th:if="${moments.hasPrevious() || moments.hasNext()}"
+      >
+        <a
+          th:if="${moments.hasPrevious()}"
+          th:href="@{${moments.prevUrl}}"
+          rel="prev"
+          th:text="#{common.previousPage}"
+        ></a>
+        <span><strong th:text="${moments.page}"></strong> / <span th:text="${moments.totalPages}"></span></span>
+        <a th:if="${moments.hasNext()}" th:href="@{${moments.nextUrl}}" rel="next" th:text="#{common.nextPage}"></a>
       </nav>
     </th:block>
 
     <div class="empty-state moment-empty" th:unless="${pluginFinder.available('PluginMoments', '>=1.16.1')}">
-      <h2>瞬间插件需要更新</h2>
-      <p>山月记的完整瞬间体验需要官方 Moments 插件 1.16.1 或更高版本。</p>
+      <h2 th:text="#{page.moments.pluginRequired.title}"></h2>
+      <p th:text="#{page.moments.pluginRequired.description}"></p>
     </div>
 
     <p class="sr-only" aria-live="polite" data-moment-feedback></p>

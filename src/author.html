@@ -5,11 +5,11 @@
 
   <section class="listing-page container">
     <header class="listing-hero">
-      <p class="eyebrow">AUTHOR</p>
+      <p class="eyebrow" th:text="#{page.author.eyebrow}">AUTHOR</p>
       <h1 th:text="${author.spec.displayName}">作者</h1>
       <p th:if="${not #strings.isEmpty(author.spec.bio)}" th:text="${author.spec.bio}"></p>
     </header>
-    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}">这位作者暂时没有文章。</p>
+    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}" th:text="#{page.author.empty}">这位作者暂时没有文章。</p>
     <ul class="post-list">
       <include src="post-card.html"></include>
     </ul>

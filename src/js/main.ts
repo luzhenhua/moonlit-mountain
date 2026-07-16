@@ -2,12 +2,62 @@ import "../css/main.css";
 import "../css/links-talks.css";
 
 declare global {
+  interface MoonlitMountainI18nConfig {
+    locale?: string;
+    messages?: Record<string, string>;
+  }
+
   interface Window {
+    MoonlitMountainI18n?: MoonlitMountainI18nConfig;
     SearchWidget?: {
       open: () => void;
     };
   }
 }
+
+const defaultMessages = {
+  momentUpvote: "喜欢这个瞬间",
+  momentUpvoted: "已喜欢这个瞬间",
+  momentUpvotePending: "正在记录喜欢。",
+  momentUpvoteSuccess: "已喜欢这个瞬间。",
+  momentUpvoteError: "暂时无法记录喜欢，请稍后重试。",
+  unknownTime: "时间未记录",
+  untitledUpdate: "未命名近况",
+  friendSite: "友邻站点",
+  feedSourceLabel: "访问订阅来源：{0}",
+  feedStoryLabel: "阅读 {0} 的文章：{1}",
+  read: "阅读",
+  feedUnavailable: "原文地址暂不可用",
+  feedLoadMore: "查看更早近况",
+  feedLoadingButton: "正在捎来…",
+  feedLoadingStatus: "正在加载更早近况。",
+  feedLoaded: "已加载 {0} 条更早近况。",
+  feedReachedStart: "已抵达最早一篇",
+  feedLoadedReachedStart: "已加载 {0} 条更早近况，已经抵达最早一篇。",
+  feedRetry: "重试查看更早近况",
+  feedError: "这次没能捎来更早近况，请重试。",
+  submenuExpand: "展开 {0} 子菜单",
+  submenuCollapse: "收起 {0} 子菜单",
+  submenuCurrent: "当前",
+  menuOpen: "打开菜单",
+  menuClose: "关闭菜单",
+  socialDefaultName: "社交媒体",
+  socialImageAlt: "{0} 图片",
+  tocSection: "章节 {0}",
+  tocOpen: "打开文章目录",
+  tocClose: "关闭文章目录",
+} as const;
+
+type MessageKey = keyof typeof defaultMessages;
+
+const runtimeI18n = window.MoonlitMountainI18n;
+const locale = runtimeI18n?.locale || document.documentElement.lang || "zh-CN";
+const message = (key: MessageKey) => runtimeI18n?.messages?.[key] || defaultMessages[key];
+const formatMessage = (key: MessageKey, ...values: Array<string | number>) =>
+  message(key).replace(/\{(\d+)\}/g, (placeholder, index: string) => {
+    const value = values[Number(index)];
+    return value === undefined ? placeholder : String(value);
+  });
 
 type LinkFeedItemPayload = Record<string, unknown>;
 
@@ -29,11 +79,20 @@ const socialImageDialog = document.querySelector<HTMLDialogElement>("[data-socia
 const socialImagePreview = socialImageDialog?.querySelector<HTMLImageElement>("[data-social-image-preview]");
 const socialImageTitle = socialImageDialog?.querySelector<HTMLElement>("[data-social-image-title]");
 const socialImageClose = socialImageDialog?.querySelector<HTMLButtonElement>("[data-social-image-close]");
+const languageSwitcher = document.querySelector<HTMLSelectElement>("[data-language-switcher]");
 const menuBackground = Array.from(
   document.querySelectorAll<HTMLElement>(".site-main, .site-footer"),
 );
 
 let setMobileMenuOpen: ((open: boolean, restoreFocus?: boolean) => void) | undefined;
+
+languageSwitcher?.addEventListener("change", () => {
+  const language = languageSwitcher.value.trim();
+  if (!language) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("language", language);
+  window.location.assign(url.href);
+});
 
 const svgIconDataUrlPattern = /^data:image\/svg\+xml(?<base64>;base64)?,(?<payload>.*)$/is;
 const base64PayloadPattern =
@@ -222,7 +281,7 @@ try {
 
 const syncMomentUpvoteButton = (button: HTMLButtonElement, upvoted: boolean) => {
   button.setAttribute("aria-pressed", String(upvoted));
-  button.setAttribute("aria-label", upvoted ? "已喜欢这个瞬间" : "喜欢这个瞬间");
+  button.setAttribute("aria-label", message(upvoted ? "momentUpvoted" : "momentUpvote"));
   if (upvoted) button.setAttribute("aria-disabled", "true");
   else button.removeAttribute("aria-disabled");
 };
@@ -237,7 +296,7 @@ momentUpvoteButtons.forEach((button) => {
 
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
-    if (momentFeedback) momentFeedback.textContent = "正在记录喜欢。";
+    if (momentFeedback) momentFeedback.textContent = message("momentUpvotePending");
 
     try {
       const response = await fetch("/apis/api.halo.run/v1alpha1/trackers/upvote", {
@@ -265,9 +324,9 @@ momentUpvoteButtons.forEach((button) => {
           if (count) count.textContent = String((Number.parseInt(count.textContent || "0", 10) || 0) + 1);
           syncMomentUpvoteButton(candidate, true);
         });
-      if (momentFeedback) momentFeedback.textContent = "已喜欢这个瞬间。";
+      if (momentFeedback) momentFeedback.textContent = message("momentUpvoteSuccess");
     } catch {
-      if (momentFeedback) momentFeedback.textContent = "暂时无法记录喜欢，请稍后重试。";
+      if (momentFeedback) momentFeedback.textContent = message("momentUpvoteError");
     } finally {
       button.disabled = false;
       button.removeAttribute("aria-busy");
@@ -316,15 +375,14 @@ const linkFeedLog = linkFeedStream?.querySelector<HTMLOListElement>("[data-feed-
 const linkFeedPagination = linkFeedStream?.querySelector<HTMLElement>("[data-feed-pagination]");
 const linkFeedStatus = linkFeedStream?.querySelector<HTMLElement>("[data-feed-status]");
 
-const feedDateFormatter = new Intl.DateTimeFormat("zh-CN", {
+const feedDateFormatter = new Intl.DateTimeFormat(locale, {
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
 });
-const feedTimeFormatter = new Intl.DateTimeFormat("zh-CN", {
+const feedTimeFormatter = new Intl.DateTimeFormat(locale, {
   hour: "2-digit",
   minute: "2-digit",
-  hourCycle: "h23",
 });
 
 const readFeedText = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -355,31 +413,29 @@ const appendFeedTime = (story: HTMLElement, rawTime: string) => {
   if (!rawTime || Number.isNaN(date.getTime())) {
     const unknown = document.createElement("span");
     unknown.className = "link-feed-entry__time link-feed-entry__time--unknown";
-    unknown.textContent = "时间未记录";
+    unknown.textContent = message("unknownTime");
     story.append(unknown);
     return;
   }
 
-  const dateParts = new Map(feedDateFormatter.formatToParts(date).map((part) => [part.type, part.value]));
-  const timeParts = new Map(feedTimeFormatter.formatToParts(date).map((part) => [part.type, part.value]));
   const time = document.createElement("time");
   time.className = "link-feed-entry__time";
   time.dateTime = rawTime;
 
   const day = document.createElement("span");
-  day.textContent = `${dateParts.get("year")}.${dateParts.get("month")}.${dateParts.get("day")}`;
+  day.textContent = feedDateFormatter.format(date);
   const separator = document.createElement("span");
   separator.setAttribute("aria-hidden", "true");
   separator.textContent = "•";
   const clock = document.createElement("small");
-  clock.textContent = `${timeParts.get("hour")}:${timeParts.get("minute")}`;
+  clock.textContent = feedTimeFormatter.format(date);
   time.append(day, separator, clock);
   story.append(time);
 };
 
 const createFeedEntry = (item: LinkFeedItemPayload) => {
-  const title = readFeedText(item.title) || "未命名近况";
-  const author = readFeedText(item.author) || "友邻站点";
+  const title = readFeedText(item.title) || message("untitledUpdate");
+  const author = readFeedText(item.author) || message("friendSite");
   const authorUrl = readHttpUrl(item.authorUrl);
   const authorLogo = readFeedText(item.authorLogo);
   const feedUrl = readHttpUrl(item.url);
@@ -400,7 +456,7 @@ const createFeedEntry = (item: LinkFeedItemPayload) => {
     source.href = authorUrl;
     source.target = "_blank";
     source.rel = "noopener noreferrer external";
-    source.setAttribute("aria-label", `访问订阅来源：${author}`);
+    source.setAttribute("aria-label", formatMessage("feedSourceLabel", author));
   }
 
   const logo = document.createElement("span");
@@ -421,7 +477,7 @@ const createFeedEntry = (item: LinkFeedItemPayload) => {
 
   const fallback = document.createElement("span");
   fallback.setAttribute("aria-hidden", "true");
-  fallback.textContent = Array.from(author)[0] || "友";
+  fallback.textContent = Array.from(author)[0] || Array.from(message("friendSite"))[0] || "F";
   logo.append(fallback);
 
   const authorName = document.createElement("span");
@@ -437,7 +493,7 @@ const createFeedEntry = (item: LinkFeedItemPayload) => {
     story.href = feedUrl;
     story.target = "_blank";
     story.rel = "noopener noreferrer external";
-    story.setAttribute("aria-label", `阅读 ${author} 的文章：${title}`);
+    story.setAttribute("aria-label", formatMessage("feedStoryLabel", author, title));
   }
 
   const heading = document.createElement("strong");
@@ -456,13 +512,13 @@ const createFeedEntry = (item: LinkFeedItemPayload) => {
     callToAction.className = "link-feed-entry__cta";
     callToAction.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
-    label.textContent = "阅读";
+    label.textContent = message("read");
     callToAction.append(label, createFeedArrow());
     story.append(callToAction);
   } else {
     const unavailable = document.createElement("span");
     unavailable.className = "link-feed-entry__unavailable";
-    unavailable.textContent = "原文地址暂不可用";
+    unavailable.textContent = message("feedUnavailable");
     story.append(unavailable);
   }
 
@@ -530,11 +586,11 @@ if (linkFeedStream && linkFeedLog && linkFeedPagination && linkFeedStatus) {
 
     event.preventDefault();
     const fromKeyboard = event.detail === 0;
-    const defaultLabel = button.dataset.feedDefaultLabel || button.textContent?.trim() || "查看更早近况";
+    const defaultLabel = button.dataset.feedDefaultLabel || button.textContent?.trim() || message("feedLoadMore");
     button.dataset.feedDefaultLabel = defaultLabel;
     button.classList.remove("is-error");
-    button.textContent = "正在捎来…";
-    linkFeedStatus.textContent = "正在加载更早近况。";
+    button.textContent = message("feedLoadingButton");
+    linkFeedStatus.textContent = message("feedLoadingStatus");
     setFeedBusy(button, true);
 
     void (async () => {
@@ -585,14 +641,14 @@ if (linkFeedStream && linkFeedLog && linkFeedPagination && linkFeedStatus) {
           fallbackUrl.hash = "friend-updates";
           button.href = fallbackUrl.href;
           button.textContent = defaultLabel;
-          linkFeedStatus.textContent = `已加载 ${entries.length} 条更早近况。`;
+          linkFeedStatus.textContent = formatMessage("feedLoaded", entries.length);
         } else {
           const end = document.createElement("span");
           end.className = "links-feed-pagination__end";
-          end.textContent = "已抵达最早一篇";
+          end.textContent = message("feedReachedStart");
           end.tabIndex = -1;
           button.replaceWith(end);
-          linkFeedStatus.textContent = `已加载 ${entries.length} 条更早近况，已经抵达最早一篇。`;
+          linkFeedStatus.textContent = formatMessage("feedLoadedReachedStart", entries.length);
           if (fromKeyboard && !firstNewEntry) end.focus({ preventScroll: true });
         }
 
@@ -605,9 +661,9 @@ if (linkFeedStream && linkFeedLog && linkFeedPagination && linkFeedStatus) {
           focusTarget.focus({ preventScroll: true });
         }
       } catch {
-        button.textContent = "重试查看更早近况";
+        button.textContent = message("feedRetry");
         button.classList.add("is-error");
-        linkFeedStatus.textContent = "这次没能捎来更早近况，请重试。";
+        linkFeedStatus.textContent = message("feedError");
       } finally {
         setFeedBusy(button, false);
       }
@@ -669,7 +725,10 @@ const setSubmenuOpen = (toggle: HTMLButtonElement, open: boolean, restoreFocus =
   toggle.setAttribute("aria-expanded", String(open));
   toggle.setAttribute(
     "aria-label",
-    `${open ? "收起" : "展开"} ${toggle.dataset.submenuLabel || "当前"} 子菜单`,
+    formatMessage(
+      open ? "submenuCollapse" : "submenuExpand",
+      toggle.dataset.submenuLabel || message("submenuCurrent"),
+    ),
   );
   if (open) positionSubmenu(item);
   if (restoreFocus) toggle.focus({ preventScroll: true });
@@ -723,7 +782,7 @@ document.addEventListener("keydown", (event) => {
 if (toggle && panel && backdrop) {
   const setOpen = (open: boolean, restoreFocus = false) => {
     toggle.setAttribute("aria-expanded", String(open));
-    toggle.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
+    toggle.setAttribute("aria-label", message(open ? "menuClose" : "menuOpen"));
     panel.classList.toggle("is-open", open);
     backdrop.classList.toggle("is-open", open);
     backdrop.setAttribute("aria-hidden", String(!open));
@@ -766,7 +825,7 @@ if (toggle && panel && backdrop) {
 
     const panelControls = Array.from(
       panel.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])",
+        "a[href], button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])",
       ),
     ).filter((element) => {
       const style = window.getComputedStyle(element);
@@ -821,7 +880,7 @@ document.querySelectorAll<HTMLButtonElement>("[data-social-image-trigger]").forE
     const src = trigger.dataset.socialImageSrc?.trim();
     if (!src) return;
 
-    const name = trigger.dataset.socialImageName?.trim() || "社交媒体";
+    const name = trigger.dataset.socialImageName?.trim() || message("socialDefaultName");
     const mobileMenuOpen = toggle?.getAttribute("aria-expanded") === "true";
     socialImageReturnTarget = mobileMenuOpen ? toggle : trigger;
     if (mobileMenuOpen) setMobileMenuOpen?.(false);
@@ -834,7 +893,7 @@ document.querySelectorAll<HTMLButtonElement>("[data-social-image-trigger]").forE
 
     socialImageTitle.textContent = name;
     socialImagePreview.src = src;
-    socialImagePreview.alt = `${name} 图片`;
+    socialImagePreview.alt = formatMessage("socialImageAlt", name);
     try {
       socialImageDialog.showModal();
     } catch {
@@ -883,7 +942,7 @@ tocHeadings.forEach((heading, index) => {
   if (!heading.id) heading.id = `section-${index + 1}`;
   const link = document.createElement("a");
   link.href = `#${heading.id}`;
-  link.textContent = heading.textContent || `章节 ${index + 1}`;
+  link.textContent = heading.textContent || formatMessage("tocSection", index + 1);
   link.dataset.level = heading.tagName === "H3" ? "3" : "2";
   tocList?.append(link);
 });
@@ -911,7 +970,7 @@ const setTocExpanded = (expanded: boolean) => {
   articleToc?.classList.toggle("is-open", expanded);
   tocBackdrop?.classList.toggle("is-open", expanded);
   tocToggle?.setAttribute("aria-expanded", String(expanded));
-  tocToggle?.setAttribute("aria-label", expanded ? "关闭文章目录" : "打开文章目录");
+  tocToggle?.setAttribute("aria-label", message(expanded ? "tocClose" : "tocOpen"));
 };
 
 const syncTocAccessibility = (top = window.scrollY) => {

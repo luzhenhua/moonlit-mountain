@@ -15,8 +15,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build && theme-package",
-    "build-only": "vite build"
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "build": "node scripts/check-i18n.mjs && vite build && theme-package",
+    "build-only": "node scripts/check-i18n.mjs && vite build"
   },
   "devDependencies": {
     "@halo-dev/theme-package-cli": "^1.0.1",

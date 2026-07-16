@@ -1,7 +1,7 @@
 <li
   class="link-route-item"
   th:with="
-    linkName = ${#strings.isEmpty(link.spec.displayName) ? '未命名站点' : link.spec.displayName},
+    linkName = ${#strings.isEmpty(link.spec.displayName) ? #messages.msg('link.unnamed') : link.spec.displayName},
     linkUrl = ${link.spec.url ?: ''},
     linkLogo = ${link.spec.logo ?: ''},
     linkDescription = ${link.spec.description ?: ''},
@@ -13,7 +13,7 @@
     th:href="@{${linkUrl}}"
     target="_blank"
     rel="noopener noreferrer external"
-    th:aria-label="|访问 ${linkName}（在新标签页打开）|"
+    th:aria-label="${#messages.msg('link.visitNewTab', linkName)}"
   >
     <span class="link-route__source">
       <span
@@ -40,7 +40,7 @@
         th:classappend="${accessState == 'ACCESSIBLE' ? ' is-accessible' : (accessState == 'CHECKING' ? ' is-checking' : ' is-inaccessible')}"
       >
         <span aria-hidden="true"></span>
-        <span th:text="${accessState == 'ACCESSIBLE' ? '可抵达' : (accessState == 'CHECKING' ? '探路中' : '暂不可达')}">可抵达</span>
+        <span th:text="${accessState == 'ACCESSIBLE' ? #messages.msg('link.status.accessible') : (accessState == 'CHECKING' ? #messages.msg('link.status.checking') : #messages.msg('link.status.inaccessible'))}"></span>
       </span>
     </span>
 
@@ -54,7 +54,7 @@
     </span>
 
     <span class="link-route__cta" aria-hidden="true">
-      <span>访问</span>
+      <span th:text="#{link.visit}"></span>
       <svg viewBox="0 0 24 24"><path d="M17 7 7 17M8 7h9v9" /></svg>
     </span>
 
@@ -77,6 +77,6 @@
       <span class="link-route__fallback" th:text="${#strings.substring(linkName, 0, 1)}">山</span>
     </span>
     <span class="link-route__spectral-line" aria-hidden="true"></span>
-    <span class="sr-only">在新标签页打开</span>
+    <span class="sr-only" th:text="#{link.newTab}"></span>
   </a>
 </li>

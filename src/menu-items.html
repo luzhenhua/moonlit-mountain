@@ -16,7 +16,8 @@
       type="button"
       aria-expanded="false"
       th:if="${not #lists.isEmpty(item.children)}"
-      th:attr="aria-controls=|submenu-${item.metadata.name}|,aria-label=|展开 ${item.status.displayName} 子菜单|,data-submenu-label=${item.status.displayName}"
+      th:attr="aria-controls=|submenu-${item.metadata.name}|,data-submenu-label=${item.status.displayName}"
+      th:aria-label="${#messages.msg('nav.submenu.expand', item.status.displayName)}"
       data-submenu-toggle
     >
       <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>

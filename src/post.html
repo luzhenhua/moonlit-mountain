@@ -8,16 +8,16 @@
       <h1 th:text="${post.spec.title}">文章标题</h1>
       <div class="article-meta">
         <div class="article-meta__row">
-          <span class="article-meta__label">发布</span>
+          <span class="article-meta__label" th:text="#{page.post.published}">发布</span>
           <time
             class="article-meta__date"
             th:datetime="${post.spec.publishTime}"
-            th:text="${#temporals.format(post.spec.publishTime, 'yyyy年MM月dd日')}"
+            th:text="${#temporals.format(post.spec.publishTime, #messages.msg('date.format.long'))}"
           >2026年07月10日</time>
         </div>
         <div class="article-meta__row" th:if="${not #lists.isEmpty(post.categories)}">
-          <span class="article-meta__label">分类</span>
-          <ul class="category-list" role="list" aria-label="文章分类">
+          <span class="article-meta__label" th:text="#{page.post.categories}">分类</span>
+          <ul class="category-list" role="list" aria-label="文章分类" th:aria-label="#{page.post.categoriesAria}">
             <li th:each="category : ${post.categories}">
               <a class="category-chip" th:href="@{${category.status.permalink}}">
                 <span class="category-chip__dot" aria-hidden="true"></span>
@@ -33,18 +33,20 @@
       class="article-toc"
       id="article-toc"
       aria-label="文章目录"
+      th:aria-label="#{page.post.tocAria}"
       aria-hidden="true"
       data-article-toc
       hidden
       inert
     >
-      <p class="eyebrow">ON THIS PAGE</p>
+      <p class="eyebrow" th:text="#{page.post.tocEyebrow}">ON THIS PAGE</p>
       <nav data-toc-list></nav>
     </aside>
     <button
       class="toc-toggle"
       type="button"
       aria-label="打开文章目录"
+      th:aria-label="#{page.post.openToc}"
       aria-controls="article-toc"
       aria-expanded="false"
       aria-hidden="true"
@@ -57,6 +59,7 @@
       class="toc-backdrop"
       type="button"
       aria-label="关闭文章目录"
+      th:aria-label="#{page.post.closeToc}"
       aria-controls="article-toc"
       aria-hidden="true"
       data-toc-backdrop
@@ -75,8 +78,8 @@
     <div class="article-content" th:utext="${post.content.content}"></div>
 
     <footer class="article-tags" th:if="${not #lists.isEmpty(post.tags)}">
-      <p class="article-tags__label">收录标签</p>
-      <ul class="tag-list" role="list" aria-label="文章标签">
+      <p class="article-tags__label" th:text="#{page.post.tagsLabel}">收录标签</p>
+      <ul class="tag-list" role="list" aria-label="文章标签" th:aria-label="#{page.post.tagsAria}">
         <li th:each="tag : ${post.tags}">
           <a
             class="tag-chip"
@@ -90,13 +93,13 @@
       </ul>
     </footer>
 
-    <nav class="post-nav" aria-label="相邻文章" th:with="cursor = ${postFinder.cursor(post.metadata.name)}">
+    <nav class="post-nav" aria-label="相邻文章" th:aria-label="#{page.post.adjacentPosts}" th:with="cursor = ${postFinder.cursor(post.metadata.name)}">
       <a th:if="${cursor.hasPrevious()}" th:href="@{${cursor.previous.status.permalink}}">
-        <span>上一篇</span>
+        <span th:text="#{page.post.previousPost}">上一篇</span>
         <strong th:text="${cursor.previous.spec.title}"></strong>
       </a>
       <a th:if="${cursor.hasNext()}" th:href="@{${cursor.next.status.permalink}}">
-        <span>下一篇</span>
+        <span th:text="#{page.post.nextPost}">下一篇</span>
         <strong th:text="${cursor.next.spec.title}"></strong>
       </a>
     </nav>
@@ -110,12 +113,12 @@
     "
   >
     <div class="container" th:if="${not #lists.isEmpty(relatedPosts.items)}">
-      <h2>继续阅读</h2>
+      <h2 th:text="#{page.post.continueReading}">继续阅读</h2>
       <div class="related-grid">
         <article class="recent-card" th:each="related, stat : ${relatedPosts.items}" th:if="${related.metadata.name != post.metadata.name and stat.index < 4}" data-reveal>
           <div class="recent-card__body">
             <h3><a th:href="@{${related.status.permalink}}" th:text="${related.spec.title}">文章标题</a></h3>
-            <p class="post-meta"><time th:text="${#temporals.format(related.spec.publishTime, 'yyyy.MM.dd')}">2026.07.10</time></p>
+            <p class="post-meta"><time th:text="${#temporals.format(related.spec.publishTime, #messages.msg('date.format.short'))}">2026.07.10</time></p>
           </div>
           <a class="recent-card__media" th:href="@{${related.status.permalink}}" tabindex="-1">
             <img th:src="${(not #strings.isEmpty(related.spec.cover) and related.spec.cover != '0') ? related.spec.cover : #theme.assets('/images/moonlit-mountain-hero.jpg')}" th:alt="${related.spec.title}" loading="lazy" />

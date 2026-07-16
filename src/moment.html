@@ -1,16 +1,16 @@
 <include src="layout.html">
   <template name="head">
-    <title th:text="|${title ?: '瞬间'} - ${site.title}|">瞬间 - 山月记</title>
+    <title th:text="|${title ?: #messages.msg('page.moment.title')} - ${site.title}|"></title>
   </template>
 
   <section class="moment-detail" aria-labelledby="moment-detail-title">
     <header class="moment-detail__hero">
       <a class="moment-back" th:href="@{/moments}">
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
-        <span>返回瞬间</span>
+        <span th:text="#{page.moment.backToMoments}"></span>
       </a>
-      <h1 id="moment-detail-title">这一刻</h1>
-      <p>一则被时间留下的短笺。</p>
+      <h1 id="moment-detail-title" th:text="#{page.moment.heading}"></h1>
+      <p th:text="#{page.moment.description}"></p>
     </header>
 
     <th:block th:with="momentDetail = true, momentIndex = 0">
@@ -21,7 +21,7 @@
   </section>
 
   <section id="moment-comments" class="comment-shell moment-comment-shell" th:if="${haloCommentEnabled}">
-    <h2>回应这一刻</h2>
+    <h2 th:text="#{page.moment.comments.title}"></h2>
     <halo:comment group="moment.halo.run" kind="Moment" th:attr="name=${moment.metadata.name}" />
   </section>
 </include>

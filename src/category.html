@@ -5,11 +5,11 @@
 
   <section class="listing-page container">
     <header class="listing-hero">
-      <p class="eyebrow">CATEGORY</p>
+      <p class="eyebrow" th:text="#{page.category.eyebrow}">CATEGORY</p>
       <h1 th:text="${category.spec.displayName}">分类</h1>
       <p th:if="${not #strings.isEmpty(category.spec.description)}" th:text="${category.spec.description}"></p>
     </header>
-    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}">这个分类暂时没有文章。</p>
+    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}" th:text="#{page.category.empty}">这个分类暂时没有文章。</p>
     <ul class="post-list">
       <include src="post-card.html"></include>
     </ul>

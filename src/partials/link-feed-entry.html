@@ -2,12 +2,12 @@
   class="link-feed-entry"
   th:attr="data-feed-id=${feed.id}"
   th:with="
-    feedTitle = ${#strings.isEmpty(feed.title) ? '未命名近况' : feed.title},
+    feedTitle = ${#strings.isEmpty(feed.title) ? #messages.msg('link.feed.untitled') : feed.title},
     feedUrlValue = ${feed.url ?: ''},
     feedUrlLower = ${#strings.toLowerCase(feedUrlValue)},
     feedUrl = ${(#strings.startsWith(feedUrlLower, 'https://') or #strings.startsWith(feedUrlLower, 'http://')) ? feedUrlValue : ''},
     feedSummary = ${feed.summary ?: ''},
-    feedAuthor = ${#strings.isEmpty(feed.author) ? '友邻站点' : feed.author},
+    feedAuthor = ${#strings.isEmpty(feed.author) ? #messages.msg('link.feed.neighbor') : feed.author},
     feedAuthorUrlValue = ${feed.authorUrl ?: ''},
     feedAuthorUrlLower = ${#strings.toLowerCase(feedAuthorUrlValue)},
     feedAuthorUrl = ${(#strings.startsWith(feedAuthorUrlLower, 'https://') or #strings.startsWith(feedAuthorUrlLower, 'http://')) ? feedAuthorUrlValue : ''},
@@ -21,7 +21,7 @@
     th:href="@{${feedAuthorUrl}}"
     target="_blank"
     rel="noopener noreferrer external"
-    th:aria-label="|访问订阅来源：${feedAuthor}|"
+    th:aria-label="${#messages.msg('link.feed.visitSource', feedAuthor)}"
   >
     <span class="link-feed-entry__logo" th:classappend="${#strings.isEmpty(feedAuthorLogo)} ? ' is-fallback'">
       <img
@@ -61,18 +61,18 @@
     th:href="@{${feedUrl}}"
     target="_blank"
     rel="noopener noreferrer external"
-    th:aria-label="|阅读 ${feedAuthor} 的文章：${feedTitle}|"
+    th:aria-label="${#messages.msg('link.feed.readStory', feedAuthor, feedTitle)}"
   >
     <strong th:text="${feedTitle}">文章标题</strong>
     <span class="link-feed-entry__summary" th:if="${not #strings.isEmpty(feedSummary)}" th:text="${feedSummary}">文章摘要</span>
     <time class="link-feed-entry__time" th:if="${feedTime != null}" th:datetime="${feedTime}">
-      <span th:text="${#temporals.format(feedTime, 'yyyy.MM.dd')}">2026.07.15</span>
+      <span th:text="${#temporals.format(feedTime, #messages.msg('date.format.short'))}"></span>
       <span aria-hidden="true">•</span>
-      <small th:text="${#temporals.format(feedTime, 'HH:mm')}">10:24</small>
+      <small th:text="${#temporals.format(feedTime, #messages.msg('date.format.time'))}"></small>
     </time>
-    <span class="link-feed-entry__time link-feed-entry__time--unknown" th:unless="${feedTime != null}">时间未记录</span>
+    <span class="link-feed-entry__time link-feed-entry__time--unknown" th:unless="${feedTime != null}" th:text="#{link.feed.timeUnknown}"></span>
     <span class="link-feed-entry__cta" aria-hidden="true">
-      <span>阅读</span>
+      <span th:text="#{link.feed.read}"></span>
       <svg viewBox="0 0 24 24"><path d="M17 7 7 17M8 7h9v9" /></svg>
     </span>
   </a>
@@ -80,12 +80,12 @@
     <strong th:text="${feedTitle}">文章标题</strong>
     <span class="link-feed-entry__summary" th:if="${not #strings.isEmpty(feedSummary)}" th:text="${feedSummary}">文章摘要</span>
     <time class="link-feed-entry__time" th:if="${feedTime != null}" th:datetime="${feedTime}">
-      <span th:text="${#temporals.format(feedTime, 'yyyy.MM.dd')}">2026.07.15</span>
+      <span th:text="${#temporals.format(feedTime, #messages.msg('date.format.short'))}"></span>
       <span aria-hidden="true">•</span>
-      <small th:text="${#temporals.format(feedTime, 'HH:mm')}">10:24</small>
+      <small th:text="${#temporals.format(feedTime, #messages.msg('date.format.time'))}"></small>
     </time>
-    <span class="link-feed-entry__time link-feed-entry__time--unknown" th:unless="${feedTime != null}">时间未记录</span>
-    <span class="link-feed-entry__unavailable">原文地址暂不可用</span>
+    <span class="link-feed-entry__time link-feed-entry__time--unknown" th:unless="${feedTime != null}" th:text="#{link.feed.timeUnknown}"></span>
+    <span class="link-feed-entry__unavailable" th:text="#{link.feed.unavailable}"></span>
   </div>
   <span class="link-feed-entry__spectral-line" aria-hidden="true"></span>
 </li>

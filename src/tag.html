@@ -8,13 +8,13 @@
       class="listing-hero tag-archive-hero"
       th:style="|--taxonomy-color: ${tag.spec.color ?: '#a78bfa'}|"
     >
-      <p class="eyebrow">TAG</p>
+      <p class="eyebrow" th:text="#{page.tag.eyebrow}">TAG</p>
       <h1 class="tag-archive-title">
         <span class="tag-chip__dot" aria-hidden="true"></span>
         <span th:text="|# ${tag.spec.displayName}|"># 标签</span>
       </h1>
     </header>
-    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}">这个标签暂时没有文章。</p>
+    <p class="empty-state" th:if="${#lists.isEmpty(posts.items)}" th:text="#{page.tag.empty}">这个标签暂时没有文章。</p>
     <ul class="post-list">
       <include src="post-card.html"></include>
     </ul>

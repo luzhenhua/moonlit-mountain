@@ -4,18 +4,18 @@
   th:with="
     content = ${moment.spec.content},
     releaseTime = ${moment.spec.releaseTime ?: moment.metadata.creationTimestamp},
-    ownerName = ${moment.owner != null and not #strings.isEmpty(moment.owner.displayName) ? moment.owner.displayName : '站点作者'},
+    ownerName = ${moment.owner != null and not #strings.isEmpty(moment.owner.displayName) ? moment.owner.displayName : #messages.msg('moment.defaultAuthor')},
     ownerAvatar = ${moment.owner?.avatar ?: ''},
     momentUrl = @{/moments/{name}(name=${moment.metadata.name})}
   "
-  th:aria-label="|${ownerName} 于 ${#temporals.format(releaseTime, 'yyyy年MM月dd日 HH:mm')} 发布的瞬间|"
+  th:aria-label="${#messages.msg('moment.entry.ariaLabel', ownerName, #temporals.format(releaseTime, #messages.msg('date.format.dateTime')))}"
   data-reveal
 >
   <div class="moment-entry__card">
     <header class="moment-entry__meta">
       <time th:datetime="${releaseTime}">
-        <span th:text="${#temporals.format(releaseTime, 'yyyy年M月d日')}">2026年7月15日</span>
-        <small th:text="${#temporals.format(releaseTime, 'HH:mm')}">21:30</small>
+        <span th:text="${#temporals.format(releaseTime, #messages.msg('date.format.moment'))}"></span>
+        <small th:text="${#temporals.format(releaseTime, #messages.msg('date.format.time'))}"></small>
       </time>
       <button
         class="moment-action moment-action--upvote"
@@ -23,11 +23,11 @@
         th:attr="data-moment-name=${moment.metadata.name}"
         data-moment-upvote
         aria-pressed="false"
-        aria-label="喜欢这个瞬间"
+        th:aria-label="#{moment.upvote.ariaLabel}"
       >
-        <span data-moment-upvote-count th:text="${moment.stats?.upvote ?: 0}">0</span>
+        <span data-moment-upvote-count th:text="${moment.stats?.upvote ?: 0}"></span>
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6l1.2 1.2L12 21l7.6-7.6 1.2-1.2a5.4 5.4 0 0 0 0-7.6Z" /></svg>
-        <span class="moment-action__label">喜欢</span>
+        <span class="moment-action__label" th:text="#{moment.upvote.label}"></span>
       </button>
     </header>
 
@@ -54,9 +54,9 @@
     </div>
 
     <h3 class="moment-entry__title" th:if="${not momentDetail}">
-      <a th:href="${momentUrl}" th:text="${ownerName}">站点作者</a>
+      <a th:href="${momentUrl}" th:text="${ownerName}"></a>
     </h3>
-    <h2 class="moment-entry__title" th:if="${momentDetail}" th:text="${ownerName}">站点作者</h2>
+    <h2 class="moment-entry__title" th:if="${momentDetail}" th:text="${ownerName}"></h2>
 
     <div
       class="moment-entry__content"
@@ -72,23 +72,24 @@
           th:href="@{${media.url}}"
           target="_blank"
           rel="noopener noreferrer"
-          th:aria-label="|在新标签页查看 ${ownerName} 发布的第 ${mediaStat.count} 张瞬间原图|"
+          th:aria-label="${#messages.msg('moment.media.photo.original.ariaLabel', ownerName, mediaStat.count)}"
         >
           <img
             th:src="${thumbnail.gen(media.url, 'm')}"
             th:srcset="|${thumbnail.gen(media.url, 's')} 400w, ${thumbnail.gen(media.url, 'm')} 800w, ${thumbnail.gen(media.url, 'l')} 1200w|"
             sizes="(max-width: 767px) calc(100vw - 128px), (max-width: 1279px) 60vw, 350px"
-            th:alt="|${ownerName} 发布的瞬间图片|"
+            th:alt="${#messages.msg('moment.media.photo.alt', ownerName)}"
             th:attr="loading=${momentDetail and mediaStat.first ? 'eager' : 'lazy'},fetchpriority=${momentDetail and mediaStat.first ? 'high' : null}"
             decoding="async"
           />
-          <span>查看原图</span>
+          <span th:text="#{moment.media.original}"></span>
         </a>
 
         <div class="moment-media__video" th:if="${#strings.equals(media.type, 'VIDEO')}">
           <video controls playsinline th:attr="preload=${momentDetail ? 'metadata' : 'none'}">
             <source th:src="${media.url}" th:attr="type=${#strings.isEmpty(media.originType) ? null : media.originType}" />
-            您的浏览器不支持视频播放，<a th:href="@{${media.url}}">可直接打开视频</a>。
+            <span th:text="#{moment.media.video.unsupported}"></span>
+            <a th:href="@{${media.url}}" th:text="#{moment.media.video.open}"></a>
           </video>
         </div>
 
@@ -97,10 +98,11 @@
             <svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13M9 9l10-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg>
           </span>
           <div>
-            <strong>声音片段</strong>
+            <strong th:text="#{moment.media.audio.title}"></strong>
             <audio controls th:attr="preload=${momentDetail ? 'metadata' : 'none'}">
               <source th:src="${media.url}" th:attr="type=${#strings.isEmpty(media.originType) ? null : media.originType}" />
-              您的浏览器不支持音频播放，<a th:href="@{${media.url}}">可直接打开音频</a>。
+              <span th:text="#{moment.media.audio.unsupported}"></span>
+              <a th:href="@{${media.url}}" th:text="#{moment.media.audio.open}"></a>
             </audio>
           </div>
         </div>
@@ -109,7 +111,10 @@
           <span class="moment-media__post-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6zM9 10h6M9 14h6M9 18h4M15 3v4h4" /></svg>
           </span>
-          <span><small>关联文章</small><strong>继续阅读这一刻的故事</strong></span>
+          <span>
+            <small th:text="#{moment.media.post.label}"></small>
+            <strong th:text="#{moment.media.post.description}"></strong>
+          </span>
           <svg class="moment-media__post-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
         </a>
 
@@ -121,42 +126,45 @@
           <span class="moment-media__post-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
           </span>
-          <span><small>附件</small><strong>打开这个瞬间的附件</strong></span>
+          <span>
+            <small th:text="#{moment.media.attachment.label}"></small>
+            <strong th:text="#{moment.media.attachment.description}"></strong>
+          </span>
           <svg class="moment-media__post-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
         </a>
       </th:block>
     </div>
 
     <footer class="moment-entry__footer">
-      <ul class="moment-tags" th:if="${not #lists.isEmpty(moment.spec.tags)}" aria-label="瞬间标签">
+      <ul class="moment-tags" th:if="${not #lists.isEmpty(moment.spec.tags)}" th:aria-label="#{moment.tags.ariaLabel}">
         <li th:each="tag : ${moment.spec.tags}">
           <a
             th:href="@{/moments(tag=${tag})}"
             th:text="${tag}"
-          >标签</a>
+          ></a>
         </li>
       </ul>
       <div class="moment-entry__actions">
         <a class="moment-entry__open" th:if="${not momentDetail}" th:href="${momentUrl}">
-          <span>查看</span>
+          <span th:text="#{moment.view}"></span>
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17 7 7 17M8 7h9v9" /></svg>
         </a>
         <a
           class="moment-action moment-action--comment"
           th:if="${not momentDetail or haloCommentEnabled}"
           th:href="${momentDetail ? '#moment-comments' : #strings.concat(momentUrl, '#moment-comments')}"
-          th:aria-label="|查看评论，共 ${moment.stats?.approvedComment ?: 0} 条|"
+          th:aria-label="${#messages.msg('moment.comments.view.ariaLabel', moment.stats?.approvedComment ?: 0)}"
         >
-          <span>回应</span>
-          <span th:text="${moment.stats?.approvedComment ?: 0}">0</span>
+          <span th:text="#{moment.comments.label}"></span>
+          <span th:text="${moment.stats?.approvedComment ?: 0}"></span>
         </a>
         <span
           class="moment-action moment-action--comment moment-action--static"
           th:if="${momentDetail and not haloCommentEnabled}"
-          th:aria-label="|评论功能未开启，共 ${moment.stats?.approvedComment ?: 0} 条历史评论|"
+          th:aria-label="${#messages.msg('moment.comments.disabled.ariaLabel', moment.stats?.approvedComment ?: 0)}"
         >
-          <span>回应</span>
-          <span th:text="${moment.stats?.approvedComment ?: 0}">0</span>
+          <span th:text="#{moment.comments.label}"></span>
+          <span th:text="${moment.stats?.approvedComment ?: 0}"></span>
         </span>
       </div>
     </footer>

@@ -1,11 +1,48 @@
 <!doctype html>
-<html lang="zh-CN" th:lang="${site.language ?: 'zh-CN'}" data-color-scheme="dark" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" th:lang="${#locale.toLanguageTag()}" data-color-scheme="dark" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <slot name="head">
       <title th:text="${site.title}">山月记</title>
     </slot>
+    <script th:inline="javascript">
+      window.MoonlitMountainI18n = {
+        locale: /*[[${#locale.toLanguageTag()}]]*/ "zh-CN",
+        messages: {
+          momentUpvote: /*[[#{moment.upvote.ariaLabel}]]*/ "喜欢这个瞬间",
+          momentUpvoted: /*[[#{moment.upvote.activeLabel}]]*/ "已喜欢这个瞬间",
+          momentUpvotePending: /*[[#{moment.upvote.pending}]]*/ "正在记录喜欢。",
+          momentUpvoteSuccess: /*[[#{moment.upvote.success}]]*/ "已喜欢这个瞬间。",
+          momentUpvoteError: /*[[#{moment.upvote.error}]]*/ "暂时无法记录喜欢，请稍后重试。",
+          unknownTime: /*[[#{link.feed.timeUnknown}]]*/ "时间未记录",
+          untitledUpdate: /*[[#{link.feed.untitled}]]*/ "未命名近况",
+          friendSite: /*[[#{link.feed.neighbor}]]*/ "友邻站点",
+          feedSourceLabel: /*[[#{link.feed.visitSource}]]*/ "访问订阅来源：{0}",
+          feedStoryLabel: /*[[#{link.feed.readStory}]]*/ "阅读 {0} 的文章：{1}",
+          read: /*[[#{link.feed.read}]]*/ "阅读",
+          feedUnavailable: /*[[#{link.feed.unavailable}]]*/ "原文地址暂不可用",
+          feedLoadMore: /*[[#{page.links.feed.loadEarlier}]]*/ "查看更早近况",
+          feedLoadingButton: /*[[#{page.links.feed.loadingButton}]]*/ "正在捎来…",
+          feedLoadingStatus: /*[[#{page.links.feed.loadingStatus}]]*/ "正在加载更早近况。",
+          feedLoaded: /*[[#{page.links.feed.loaded}]]*/ "已加载 {0} 条更早近况。",
+          feedReachedStart: /*[[#{page.links.feed.reachedStart}]]*/ "已抵达最早一篇",
+          feedLoadedReachedStart: /*[[#{page.links.feed.loadedReachedStart}]]*/ "已加载 {0} 条更早近况，已经抵达最早一篇。",
+          feedRetry: /*[[#{page.links.feed.retry}]]*/ "重试查看更早近况",
+          feedError: /*[[#{page.links.feed.error}]]*/ "这次没能捎来更早近况，请重试。",
+          submenuExpand: /*[[#{nav.submenu.expand}]]*/ "展开 {0} 子菜单",
+          submenuCollapse: /*[[#{nav.submenu.collapse}]]*/ "收起 {0} 子菜单",
+          submenuCurrent: /*[[#{nav.submenu.current}]]*/ "当前",
+          menuOpen: /*[[#{nav.menu.open}]]*/ "打开菜单",
+          menuClose: /*[[#{nav.menu.close}]]*/ "关闭菜单",
+          socialDefaultName: /*[[#{nav.social.defaultName}]]*/ "社交媒体",
+          socialImageAlt: /*[[#{nav.social.imageAlt}]]*/ "{0} 图片",
+          tocSection: /*[[#{page.post.toc.section}]]*/ "章节 {0}",
+          tocOpen: /*[[#{page.post.openToc}]]*/ "打开文章目录",
+          tocClose: /*[[#{page.post.closeToc}]]*/ "关闭文章目录"
+        }
+      };
+    </script>
     <script type="module" src="/js/main.ts"></script>
   </head>
   <body
@@ -14,12 +51,12 @@
     th:data-categories-uri="${site.routes.categoriesUri}"
     th:data-tags-uri="${site.routes.tagsUri}"
   >
-    <a class="skip-link" href="#content">跳到正文</a>
+    <a class="skip-link" href="#content" th:text="#{layout.skipToContent}">跳到正文</a>
     <div class="page-progress" aria-hidden="true" data-page-progress></div>
 
     <header class="site-header">
       <div class="site-header__inner">
-        <a class="site-mark" data-home-mark th:href="@{/}" th:aria-label="|返回 ${site.title} 首页|">
+        <a class="site-mark" data-home-mark th:href="@{/}" th:aria-label="${#messages.msg('layout.backHome', site.title)}">
           <img
             src="./assets/images/moonlit-mountain-hero.jpg"
             th:src="${not #strings.isEmpty(site.logo) ? site.logo : #theme.assets('/images/moonlit-mountain-hero.jpg')}"
@@ -32,47 +69,68 @@
           type="button"
           aria-expanded="false"
           aria-controls="primary-navigation"
-          aria-label="打开菜单"
+          th:aria-label="#{nav.menu.open}"
           data-menu-toggle
         >
-          <span class="menu-toggle__label menu-toggle__label--open">菜单</span>
-          <span class="menu-toggle__label menu-toggle__label--close">关闭</span>
+          <span class="menu-toggle__label menu-toggle__label--open" th:text="#{nav.menu.label}">菜单</span>
+          <span class="menu-toggle__label menu-toggle__label--close" th:text="#{common.close}">关闭</span>
           <svg class="menu-toggle__chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
         </button>
 
         <button
           class="menu-backdrop"
           type="button"
-          aria-label="关闭菜单"
+          th:aria-label="#{nav.menu.close}"
           aria-hidden="true"
           tabindex="-1"
           data-menu-backdrop
         ></button>
 
         <div class="header-actions" id="primary-navigation" data-menu-panel>
-          <nav class="site-nav" aria-label="主导航" data-nav-track th:with="menu = ${menuFinder.getPrimary()}">
+          <nav class="site-nav" th:aria-label="#{nav.primary}" data-nav-track th:with="menu = ${menuFinder.getPrimary()}">
             <ul th:if="${not #lists.isEmpty(menu?.menuItems)}">
               <th:block th:replace="~{menu-items :: items(${menu.menuItems}, 1)}"></th:block>
             </ul>
             <ul th:if="${#lists.isEmpty(menu?.menuItems)}">
-              <li><a th:href="@{${site.routes.archivesUri + '/'}}">归档</a></li>
-              <li><a th:href="@{${site.routes.categoriesUri}}">分类</a></li>
-              <li><a th:href="@{${site.routes.tagsUri}}">标签</a></li>
-              <li th:if="${pluginFinder.available('PluginMoments', '>=1.16.1')}"><a th:href="@{/moments}">瞬间</a></li>
-              <li th:if="${pluginFinder.available('PluginPhotos', '>=2.0.0')}"><a th:href="@{/photos}">图库</a></li>
-              <li th:if="${pluginFinder.available('PluginLinks', '>=2.2.1')}"><a th:href="@{/links}">友链</a></li>
+              <li><a th:href="@{${site.routes.archivesUri + '/'}}" th:text="#{nav.archives}">归档</a></li>
+              <li><a th:href="@{${site.routes.categoriesUri}}" th:text="#{nav.categories}">分类</a></li>
+              <li><a th:href="@{${site.routes.tagsUri}}" th:text="#{nav.tags}">标签</a></li>
+              <li th:if="${pluginFinder.available('PluginMoments', '>=1.16.1')}"><a th:href="@{/moments}" th:text="#{nav.moments}">瞬间</a></li>
+              <li th:if="${pluginFinder.available('PluginPhotos', '>=2.0.0')}"><a th:href="@{/photos}" th:text="#{nav.photos}">图库</a></li>
+              <li th:if="${pluginFinder.available('PluginLinks', '>=2.2.1')}"><a th:href="@{/links}" th:text="#{nav.links}">友链</a></li>
             </ul>
             <span class="nav-indicator-viewport" aria-hidden="true">
               <span class="nav-indicator" data-nav-indicator></span>
             </span>
           </nav>
 
+          <label class="language-switcher">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path>
+            </svg>
+            <span class="sr-only" th:text="#{nav.language}">语言</span>
+            <select th:aria-label="#{nav.language}" data-language-switcher>
+              <option
+                value="zh-CN"
+                th:selected="${#strings.startsWith(#locale.toLanguageTag(), 'zh')}"
+                th:text="#{language.zhCN}"
+              >简体中文</option>
+              <option
+                value="en"
+                th:selected="${not #strings.startsWith(#locale.toLanguageTag(), 'zh')}"
+                th:text="#{language.en}"
+              >English</option>
+            </select>
+            <svg class="language-switcher__chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg>
+          </label>
+
           <th:block th:with="socials = ${theme.config?.navigation?.social_media}">
-            <nav class="social-nav" aria-label="社交媒体" data-nav-track th:if="${not #lists.isEmpty(socials)}">
+            <nav class="social-nav" th:aria-label="#{nav.social.label}" data-nav-track th:if="${not #lists.isEmpty(socials)}">
               <th:block
                 th:each="social : ${socials}"
                 th:with="
-                  socialName = ${#strings.isEmpty(social.name) ? '社交媒体' : social.name},
+                  socialName = ${#strings.isEmpty(social.name) ? #messages.msg('nav.social.defaultName') : social.name},
                   socialUrl = ${social.url ?: ''},
                   socialType = ${social.url_type ?: 'normal'},
                   socialIcon = ${social.icon?.value ?: ''},
@@ -88,7 +146,7 @@
                   th:href="@{${socialUrl}}"
                   th:target="${socialIsExternal ? '_blank' : null}"
                   th:rel="${socialIsExternal ? 'noopener noreferrer' : null}"
-                  th:aria-label="|访问 ${socialName}|"
+                  th:aria-label="${#messages.msg('nav.social.visit', socialName)}"
                   th:title="${socialName}"
                 >
                   <span
@@ -106,7 +164,7 @@
                   aria-haspopup="dialog"
                   aria-controls="social-image-dialog"
                   th:if="${socialType == 'image' and not #strings.isEmpty(socialUrl) and socialIsSafeImage}"
-                  th:aria-label="|查看 ${socialName} 图片|"
+                  th:aria-label="${#messages.msg('nav.social.viewImage', socialName)}"
                   th:title="${socialName}"
                   th:attr="data-social-image-src=${socialUrl},data-social-image-name=${socialName}"
                   data-social-image-trigger
@@ -121,7 +179,7 @@
                   <span class="sr-only" th:text="${socialName}">社交媒体图片</span>
                 </button>
               </th:block>
-              <button class="social-action" type="button" aria-label="搜索" th:if="${pluginFinder.available('PluginSearchWidget')}" data-search-trigger>
+              <button class="social-action" type="button" th:aria-label="#{nav.search}" th:if="${pluginFinder.available('PluginSearchWidget')}" data-search-trigger>
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z" /></svg>
               </button>
               <span class="nav-indicator-viewport" aria-hidden="true">
@@ -130,14 +188,14 @@
             </nav>
             <nav
               class="social-nav social-nav--fallback"
-              aria-label="站点工具"
+              th:aria-label="#{nav.tools}"
               data-nav-track
               th:if="${#lists.isEmpty(socials) and (pluginFinder.available('PluginFeed') or pluginFinder.available('PluginSearchWidget'))}"
             >
               <a th:if="${pluginFinder.available('PluginFeed')}" th:href="@{/rss.xml}" aria-label="RSS">
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19v.01M4 4a16 16 0 0 1 16 16M4 11a9 9 0 0 1 9 9" /></svg>
               </a>
-              <button class="social-action" type="button" aria-label="搜索" th:if="${pluginFinder.available('PluginSearchWidget')}" data-search-trigger>
+              <button class="social-action" type="button" th:aria-label="#{nav.search}" th:if="${pluginFinder.available('PluginSearchWidget')}" data-search-trigger>
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z" /></svg>
               </button>
               <span class="nav-indicator-viewport" aria-hidden="true">
@@ -156,10 +214,10 @@
       data-social-image-dialog
     >
       <div class="social-image-dialog__panel">
-        <button class="social-image-dialog__close" type="button" aria-label="关闭图片" data-social-image-close>
+        <button class="social-image-dialog__close" type="button" th:aria-label="#{nav.social.closeImage}" data-social-image-close>
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
         </button>
-        <h2 id="social-image-dialog-title" data-social-image-title>社交媒体</h2>
+        <h2 id="social-image-dialog-title" data-social-image-title th:text="#{nav.social.defaultName}">社交媒体</h2>
         <img data-social-image-preview alt="" />
       </div>
     </dialog>

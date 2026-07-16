@@ -1,23 +1,23 @@
 <include src="layout.html">
   <template name="head">
-    <title th:text="|${linksTitle ?: '友链'} - ${site.title}|">友链 - 山月记</title>
+    <title th:text="|${linksTitle ?: #messages.msg('page.links.title')} - ${site.title}|"></title>
   </template>
 
   <section class="links-page" th:with="linkCount=${#lists.size(links)}">
     <header class="links-page__hero">
-      <h1 th:text="${linksTitle ?: '友链'}">友链</h1>
-      <p>这里收集着山月记珍视的邻居：仍在认真写作、创造，也愿意把经验分享给世界的人。</p>
+      <h1 th:text="${linksTitle ?: #messages.msg('page.links.title')}"></h1>
+      <p th:text="${#messages.msg('page.links.description', site.title)}"></p>
     </header>
 
     <th:block th:if="${pluginFinder.available('PluginLinks', '>=2.2.1')}">
-      <nav class="links-filters" aria-label="友链分组" th:if="${not #lists.isEmpty(simpleGroups)}">
-        <a th:href="@{/links}" th:attr="aria-current=${group == null ? 'page' : null}">全部</a>
+      <nav class="links-filters" th:aria-label="#{page.links.groups}" th:if="${not #lists.isEmpty(simpleGroups)}">
+        <a th:href="@{/links}" th:attr="aria-current=${group == null ? 'page' : null}" th:text="#{common.all}"></a>
         <a
           th:each="item : ${simpleGroups}"
           th:href="@{/links(group=${item.metadata.name})}"
           th:attr="aria-current=${group == item.metadata.name ? 'page' : null}"
-          th:text="${#strings.isEmpty(item.spec.displayName) ? '未命名分组' : item.spec.displayName}"
-        >分组</a>
+          th:text="${#strings.isEmpty(item.spec.displayName) ? #messages.msg('page.links.group.unnamed') : item.spec.displayName}"
+        ></a>
       </nav>
 
       <div class="links-atlas" th:if="${group == null and not #lists.isEmpty(groups)}">
@@ -30,9 +30,9 @@
         >
           <header class="links-group__rail">
             <h2 th:id="|links-${linkGroup.metadata.name}-title|">
-              <span th:text="${#strings.isEmpty(linkGroup.spec.displayName) ? '沿途相遇' : linkGroup.spec.displayName}">沿途相遇</span>
+              <span th:text="${#strings.isEmpty(linkGroup.spec.displayName) ? #messages.msg('page.links.group.encountered') : linkGroup.spec.displayName}"></span>
               <span aria-hidden="true">/</span>
-              <small th:text="|${#lists.size(linkGroup.links)} 个站点|">2 个站点</small>
+              <small th:text="${#messages.msg('page.links.siteCount', #lists.size(linkGroup.links))}"></small>
             </h2>
           </header>
 
@@ -54,9 +54,9 @@
         >
           <header class="links-group__rail">
             <h2 th:id="|links-${selectedGroup.metadata.name}-title|">
-              <span th:text="${#strings.isEmpty(selectedGroup.spec.displayName) ? '所选分组' : selectedGroup.spec.displayName}">所选分组</span>
+              <span th:text="${#strings.isEmpty(selectedGroup.spec.displayName) ? #messages.msg('page.links.group.selected') : selectedGroup.spec.displayName}"></span>
               <span aria-hidden="true">/</span>
-              <small th:text="|${linkCount} 个站点|">2 个站点</small>
+              <small th:text="${#messages.msg('page.links.siteCount', linkCount)}"></small>
             </h2>
           </header>
 
@@ -70,10 +70,10 @@
 
       <div class="empty-state links-empty" th:if="${#lists.isEmpty(links)}">
         <span class="links-empty__route" aria-hidden="true"><span></span></span>
-        <h2 th:text="${group == null ? '还没有同行者' : '这个分组还没有坐标'}">还没有同行者</h2>
-        <p th:if="${group == null}">从 Halo 控制台的“链接”添加第一个站点，这里会自动连成新的坐标。</p>
-        <p th:unless="${group == null}">返回全部友链，或者从 Halo 控制台把站点加入这个分组。</p>
-        <a th:unless="${group == null}" th:href="@{/links}">查看全部友链</a>
+        <h2 th:text="${group == null ? #messages.msg('page.links.empty.title') : #messages.msg('page.links.empty.groupTitle')}"></h2>
+        <p th:if="${group == null}" th:text="#{page.links.empty.description}"></p>
+        <p th:unless="${group == null}" th:text="#{page.links.empty.groupDescription}"></p>
+        <a th:unless="${group == null}" th:href="@{/links}" th:text="#{page.links.viewAll}"></a>
       </div>
 
       <th:block
@@ -106,8 +106,8 @@
         >
           <header class="links-feed-stream__rail">
             <div>
-              <h2 id="friend-updates-title">友邻近况</h2>
-              <p>从 RSS 与 Atom 订阅里捎来的最新文章，也是一份仍在生长的阅读清单。</p>
+              <h2 id="friend-updates-title" th:text="#{page.links.feed.title}"></h2>
+              <p th:text="#{page.links.feed.description}"></p>
             </div>
           </header>
 
@@ -133,12 +133,12 @@
             ></p>
 
             <div class="links-feed-empty" th:if="${#lists.isEmpty(linkFeeds.items)}">
-              <p>这一页没有更早的公开近况。</p>
+              <p th:text="#{page.links.feed.empty}"></p>
             </div>
 
             <nav
               class="links-feed-pagination"
-              aria-label="友邻近况分页"
+              th:aria-label="#{page.links.feed.pagination}"
               th:if="${feedHasNext or feedCursorActive}"
               data-feed-pagination
             >
@@ -146,26 +146,30 @@
                 th:if="${feedCursorActive and group == null}"
                 th:href="@{/links#friend-updates}"
                 data-feed-reset
-              >返回最新近况</a>
+                th:text="#{page.links.feed.backLatest}"
+              ></a>
               <a
                 th:if="${feedCursorActive and group != null}"
                 th:href="@{/links#friend-updates(group=${group})}"
                 data-feed-reset
-              >返回最新近况</a>
+                th:text="#{page.links.feed.backLatest}"
+              ></a>
               <a
                 th:if="${feedHasNext and group == null}"
                 th:href="@{/links#friend-updates(beforePublishedAt=${linkFeeds.nextBeforePublishedAt},beforeId=${linkFeeds.nextBeforeId})}"
                 th:attr="data-before-published-at=${linkFeeds.nextBeforePublishedAt},data-before-id=${linkFeeds.nextBeforeId}"
                 aria-controls="friend-updates-list"
                 data-feed-load-more
-              >查看更早近况</a>
+                th:text="#{page.links.feed.loadEarlier}"
+              ></a>
               <a
                 th:if="${feedHasNext and group != null}"
                 th:href="@{/links#friend-updates(group=${group},beforePublishedAt=${linkFeeds.nextBeforePublishedAt},beforeId=${linkFeeds.nextBeforeId})}"
                 th:attr="data-before-published-at=${linkFeeds.nextBeforePublishedAt},data-before-id=${linkFeeds.nextBeforeId},data-feed-group=${group}"
                 aria-controls="friend-updates-list"
                 data-feed-load-more
-              >查看更早近况</a>
+                th:text="#{page.links.feed.loadEarlier}"
+              ></a>
             </nav>
           </div>
         </section>
@@ -174,11 +178,11 @@
       <section class="links-comment-shell" id="links-comments" th:if="${haloCommentEnabled}" aria-labelledby="links-comments-title">
         <header>
           <div>
-            <h2 id="links-comments-title">想和山月记交换链接？</h2>
-            <p>如果你也在持续写作或创造，欢迎带着站点来打声招呼。</p>
+            <h2 id="links-comments-title" th:text="${#messages.msg('page.links.exchange.title', site.title)}"></h2>
+            <p th:text="#{page.links.exchange.description}"></p>
           </div>
           <a class="links-comment-shell__cta" href="#links-comment-form">
-            <span>留下你的站点</span>
+            <span th:text="#{page.links.exchange.cta}"></span>
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17 7 7 17M8 7h9v9" /></svg>
           </a>
         </header>
@@ -190,8 +194,8 @@
 
     <div class="empty-state links-empty" th:unless="${pluginFinder.available('PluginLinks', '>=2.2.1')}">
       <span class="links-empty__route" aria-hidden="true"><span></span></span>
-      <h2>友链插件需要更新</h2>
-      <p>山月记的完整友链体验需要官方 Links 插件 2.2.1 或更高版本。</p>
+      <h2 th:text="#{page.links.plugin.outdatedTitle}"></h2>
+      <p th:text="${#messages.msg('page.links.plugin.outdatedDescription', site.title)}"></p>
     </div>
   </section>
 </include>

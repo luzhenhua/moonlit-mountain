@@ -1,15 +1,15 @@
 <include src="layout.html">
   <template name="head">
-    <title th:text="|归档 - ${site.title}|">归档 - 山月记</title>
+    <title th:text="${#messages.msg('page.archives.title') + ' - ' + site.title}">归档 - 山月记</title>
   </template>
 
   <section class="listing-page container">
     <header class="listing-hero">
-      <h1>文章归档</h1>
-      <p>沿着时间，重读写下的痕迹。</p>
+      <h1 th:text="#{page.archives.heading}">文章归档</h1>
+      <p th:text="#{page.archives.description}">沿着时间，重读写下的痕迹。</p>
     </header>
 
-    <p class="empty-state" th:if="${#lists.isEmpty(archives.items)}">还没有可归档的文章。</p>
+    <p class="empty-state" th:if="${#lists.isEmpty(archives.items)}" th:text="#{page.archives.empty}">还没有可归档的文章。</p>
     <ul class="post-list" th:if="${not #lists.isEmpty(archives.items)}">
       <th:block th:each="archive : ${archives.items}">
         <th:block th:each="month : ${archive.months}">
@@ -23,7 +23,7 @@
             </a>
             <div class="post-card__body">
               <p class="post-meta">
-                <time th:text="${#temporals.format(post.spec.publishTime, 'yyyy.MM.dd')}">2026.07.10</time>
+                <time th:text="${#temporals.format(post.spec.publishTime, #messages.msg('date.format.short'))}">2026.07.10</time>
                 <span th:if="${not #lists.isEmpty(post.categories)}">
                   · <span th:text="${post.categories[0].spec.displayName}">随笔</span>
                 </span>
@@ -36,10 +36,10 @@
       </th:block>
     </ul>
 
-    <nav class="pagination" aria-label="归档分页" th:if="${archives.hasPrevious() || archives.hasNext()}">
-      <a th:if="${archives.hasPrevious()}" th:href="@{${archives.prevUrl}}">← 上一页</a>
+    <nav class="pagination" aria-label="归档分页" th:aria-label="#{common.pagination}" th:if="${archives.hasPrevious() || archives.hasNext()}">
+      <a th:if="${archives.hasPrevious()}" th:href="@{${archives.prevUrl}}" th:text="${'← ' + #messages.msg('common.previousPage')}">← 上一页</a>
       <span th:text="|${archives.page} / ${archives.totalPages}|">1 / 1</span>
-      <a th:if="${archives.hasNext()}" th:href="@{${archives.nextUrl}}">下一页 →</a>
+      <a th:if="${archives.hasNext()}" th:href="@{${archives.nextUrl}}" th:text="${#messages.msg('common.nextPage') + ' →'}">下一页 →</a>
     </nav>
   </section>
 </include>

@@ -12,6 +12,7 @@
 - 官方图库插件适配：分组筛选、影像墙、照片详情、EXIF、相邻照片导航与评论
 - 官方链接插件适配：编辑式分组卡片、分组筛选、访问状态、RSS / Atom 订阅动态与页面评论
 - 递归多级菜单、共享滑动彩色指示线与移动端菜单
+- Halo 原生主题国际化，内置简体中文与 English，并提供全站语言切换器
 - 页面封面、文章目录、阅读进度、代码高亮和响应式布局
 - 精简页脚，以及 ICP 与公安联网备案信息配置
 - SEO 元数据由 Halo 统一注入，主题只维护页面标题
@@ -24,6 +25,14 @@
 右上角社交媒体在主题设置中以可排序列表维护，每项可选择任意 Iconify 图标并填写名称、链接和类型。图标会以 Halo 生成的离线 Data URL 安全渲染；跳转类型支持网页、`mailto:` 与站内路径，其他协议不会输出。图片类型适合二维码等内容，地址应引用 Halo 附件库中的图片。
 
 页脚备案信息支持分别填写 ICP 与公安联网备案号及其跳转链接。两项备案均可独立启用；公安备案图标可从 Halo 附件库选择，留空时使用主题内置图标。备案号留空时前台不会输出对应条目，链接留空或使用非 HTTP(S) 协议时会回退到对应官方平台。
+
+## 多语言
+
+主题界面内置简体中文与 English。语言选择器使用 Halo 原生 locale 机制：首次选择会通过 `?language=` 切换当前请求，Halo 随后将语言写入全站 Cookie；未主动选择时依次跟随 Halo 站点语言和浏览器偏好。模板的 `<html lang>`、日期格式、ARIA 文案，以及由 TypeScript 动态生成的交互提示都会使用当前 locale。
+
+翻译资源位于 `i18n/default.properties`、`i18n/en.properties` 与 `i18n/zh_CN.properties`。修改资源后可运行 `corepack pnpm run check:i18n`，检查三份语言包的键、占位符与模板引用是否一致。
+
+Halo 原生主题国际化只负责主题界面，不会自动翻译文章、页面、菜单、分类、标签或插件内容。需要双语内容时，应在 Halo 中分别维护对应内容与导航关系。
 
 ## 要求
 
@@ -60,7 +69,7 @@ corepack pnpm dev
 corepack pnpm build
 ```
 
-发布包会生成到 `dist/moonlit-mountain-0.0.1.zip`。
+构建会先执行国际化完整性检查，发布包随后生成到 `dist/moonlit-mountain-0.0.1.zip`。
 
 ## 官方瞬间插件
 
@@ -87,6 +96,7 @@ corepack pnpm build
 ## 目录
 
 - `src/`：Thymeleaf 模板、样式和 TypeScript 源码
+- `i18n/`：Halo 主题消息资源（默认、English、简体中文）
 - `public/assets/`：字体、主题默认图片与第三方授权文件
 - `settings.yaml`：Halo 主题设置表单
 - `theme.yaml`：主题元数据与兼容版本

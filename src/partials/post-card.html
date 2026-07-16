@@ -8,7 +8,7 @@
   </a>
   <div class="post-card__body">
     <p class="post-meta">
-      <time th:text="${#temporals.format(post.spec.publishTime, 'yyyy.MM.dd')}">2026.07.10</time>
+      <time th:text="${#temporals.format(post.spec.publishTime, #messages.msg('date.format.short'))}">2026.07.10</time>
       <span th:if="${not #lists.isEmpty(post.categories)}">
         · <span th:text="${post.categories[0].spec.displayName}">随笔</span>
       </span>

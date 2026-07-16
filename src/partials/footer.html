@@ -24,7 +24,7 @@
     <ul
       class="footer-filings"
       role="list"
-      aria-label="网站备案信息"
+      th:aria-label="#{footer.filings}"
       th:if="${not #strings.isEmpty(icpNumber) or not #strings.isEmpty(publicSecurityNumber)}"
     >
       <li th:if="${not #strings.isEmpty(icpNumber)}">
@@ -34,7 +34,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span class="footer-filing__monogram" aria-hidden="true">ICP</span>
+          <span class="footer-filing__monogram" aria-hidden="true" th:text="#{footer.icp}"></span>
           <span th:text="${icpNumber}">京ICP备12345678号-1</span>
         </a>
       </li>
