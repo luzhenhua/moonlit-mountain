@@ -3007,7 +3007,7 @@ body[data-template="archives"] .listing-hero > p:last-child {
   max-width: 100%;
   overflow-x: auto;
   margin: 0 0 40px;
-  padding: 0 0 18px;
+  padding: 2px 0 18px;
   align-items: center;
   gap: 10px;
   border-bottom: 1px solid var(--border);

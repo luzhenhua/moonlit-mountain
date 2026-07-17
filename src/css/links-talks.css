@@ -42,7 +42,7 @@
   width: min(var(--links-content-width), calc(100% - var(--links-edge) * 2));
   overflow-x: auto;
   margin: 0 auto;
-  padding: 0 0 12px;
+  padding: 2px 0 12px;
   justify-content: center;
   gap: 8px;
   scrollbar-width: thin;
