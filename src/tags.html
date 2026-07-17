@@ -17,7 +17,7 @@
         <a
           class="tag-chip"
           th:href="@{${tag.status.permalink}}"
-          th:style="|--taxonomy-color: ${tag.spec.color ?: '#a78bfa'}|"
+          th:style="|--taxonomy-color: ${tag.spec.color ?: 'var(--nav-violet)'}|"
         >
           <span class="tag-chip__dot" aria-hidden="true"></span>
           <span th:text="|# ${tag.spec.displayName}|"># 标签</span>

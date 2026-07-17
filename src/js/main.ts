@@ -59,6 +59,101 @@ const formatMessage = (key: MessageKey, ...values: Array<string | number>) =>
     return value === undefined ? placeholder : String(value);
   });
 
+type MoonPhase = "midnight" | "twilight" | "moonlight" | "system";
+type ResolvedMoonPhase = Exclude<MoonPhase, "system">;
+
+const moonPhaseStorageKey = "moonlit-mountain.moon-phase.v1";
+const moonPhaseValues = new Set<MoonPhase>(["midnight", "twilight", "moonlight", "system"]);
+const root = document.documentElement;
+const systemLightPreference = window.matchMedia("(prefers-color-scheme: light)");
+const moonPhaseSwitcher = document.querySelector<HTMLDetailsElement>("[data-moon-phase-switcher]");
+const moonPhaseOptions = Array.from(
+  document.querySelectorAll<HTMLInputElement>("[data-moon-phase-option]"),
+);
+const moonPhaseCurrent = document.querySelector<HTMLElement>("[data-moon-phase-current]");
+
+const isMoonPhase = (value: string | undefined | null): value is MoonPhase =>
+  Boolean(value && moonPhaseValues.has(value as MoonPhase));
+
+const configuredMoonPhase: MoonPhase = isMoonPhase(root.dataset.defaultMoonPhase)
+  ? root.dataset.defaultMoonPhase
+  : "midnight";
+
+const resolveMoonPhase = (phase: MoonPhase): ResolvedMoonPhase =>
+  phase === "system" ? (systemLightPreference.matches ? "moonlight" : "midnight") : phase;
+
+const applyMoonPhase = (phase: MoonPhase, persist = false) => {
+  const resolvedPhase = resolveMoonPhase(phase);
+  root.dataset.moonPhase = phase;
+  root.dataset.resolvedMoonPhase = resolvedPhase;
+  root.dataset.colorScheme = resolvedPhase === "moonlight" ? "light" : "dark";
+  moonPhaseOptions.forEach((option) => {
+    option.checked = option.value === phase;
+  });
+  const activeOption = moonPhaseOptions.find((option) => option.value === phase);
+  const activeLabel = activeOption
+    ?.closest<HTMLElement>(".moon-phase-option")
+    ?.querySelector<HTMLElement>("strong")
+    ?.textContent?.trim();
+  if (moonPhaseCurrent && activeLabel) moonPhaseCurrent.textContent = activeLabel;
+
+  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  themeColor?.setAttribute(
+    "content",
+    resolvedPhase === "moonlight" ? "#e8eff0" : resolvedPhase === "twilight" ? "#171e22" : "#18181b",
+  );
+
+  if (persist) {
+    try {
+      localStorage.setItem(moonPhaseStorageKey, phase);
+    } catch {
+      // The visual choice still applies to this page when storage is unavailable.
+    }
+  }
+
+  document.dispatchEvent(
+    new CustomEvent("moonlit-mountain:moon-phase-change", {
+      detail: { phase, resolvedPhase },
+    }),
+  );
+};
+
+const initialMoonPhase = isMoonPhase(root.dataset.moonPhase)
+  ? root.dataset.moonPhase
+  : configuredMoonPhase;
+applyMoonPhase(initialMoonPhase);
+
+moonPhaseOptions.forEach((option) => {
+  option.addEventListener("change", () => {
+    if (!option.checked || !isMoonPhase(option.value)) return;
+    applyMoonPhase(option.value, true);
+    moonPhaseSwitcher?.removeAttribute("open");
+    moonPhaseSwitcher?.querySelector<HTMLElement>("summary")?.focus();
+  });
+});
+
+systemLightPreference.addEventListener("change", () => {
+  if (root.dataset.moonPhase === "system") applyMoonPhase("system");
+});
+
+window.addEventListener("storage", (event) => {
+  if (event.storageArea !== window.localStorage) return;
+  if (event.key !== moonPhaseStorageKey && event.key !== null) return;
+  applyMoonPhase(isMoonPhase(event.newValue) ? event.newValue : configuredMoonPhase);
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (moonPhaseSwitcher?.open && !moonPhaseSwitcher.contains(event.target as Node)) {
+    moonPhaseSwitcher.open = false;
+  }
+});
+
+moonPhaseSwitcher?.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !moonPhaseSwitcher.open) return;
+  moonPhaseSwitcher.open = false;
+  moonPhaseSwitcher.querySelector<HTMLElement>("summary")?.focus();
+});
+
 type LinkFeedItemPayload = Record<string, unknown>;
 
 interface LinkFeedPagePayload {
@@ -220,6 +315,7 @@ document.querySelectorAll<HTMLElement>("[data-nav-track]").forEach((nav) => {
     if (!nav.contains(event.relatedTarget as Node | null)) restoreIndicator();
   });
   window.addEventListener("resize", restoreIndicator);
+  document.addEventListener("moonlit-mountain:moon-phase-change", restoreIndicator);
   restoreIndicator();
 });
 
@@ -825,7 +921,7 @@ if (toggle && panel && backdrop) {
 
     const panelControls = Array.from(
       panel.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])",
+        "a[href], button:not([disabled]), summary, input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])",
       ),
     ).filter((element) => {
       const style = window.getComputedStyle(element);

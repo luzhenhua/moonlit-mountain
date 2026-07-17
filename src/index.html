@@ -116,7 +116,7 @@
       <ul class="skill-list" role="list" th:if="${not #lists.isEmpty(tagPage.items)}">
         <li
           th:each="tag : ${tagPage.items}"
-          th:style="|--taxonomy-color: ${tag.spec.color ?: '#a78bfa'}|"
+          th:style="|--taxonomy-color: ${tag.spec.color ?: 'var(--nav-violet)'}|"
         >
           <a th:href="@{${tag.status.permalink}}" th:text="${tag.spec.displayName}">标签</a>
         </li>
@@ -157,7 +157,7 @@
         class="featured-card"
         th:each="post, stat : ${featuredPosts.items}"
         data-reveal
-        th:style="|--card-accent: ${stat.index % 4 == 0 ? '#8b5cf6' : (stat.index % 4 == 1 ? '#fb7185' : (stat.index % 4 == 2 ? '#7073f3' : '#10b981'))}; --reveal-delay: ${stat.index % 2 * 70}ms;|"
+        th:style="|--card-accent: ${stat.index % 4 == 0 ? 'var(--card-violet)' : (stat.index % 4 == 1 ? 'var(--card-rose)' : (stat.index % 4 == 2 ? 'var(--card-indigo)' : 'var(--card-green)'))}; --reveal-delay: ${stat.index % 2 * 70}ms;|"
       >
         <span class="featured-card__glow" aria-hidden="true"></span>
         <div class="featured-card__body">

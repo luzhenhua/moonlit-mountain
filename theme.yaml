@@ -7,7 +7,7 @@ spec:
   author:
     name: dingdangmaoup
     website: https://github.com/DINGDANGMAOUP
-  description: 一款克制、沉静、以 Halo 原生内容与导航体系为中心的深色主题
+  description: 一款克制、沉静、以 Halo 原生内容与导航体系为中心的主题，支持深夜、暮色、月白与跟随系统四种“月相”配色，默认保持当前深夜品牌
   logo: /themes/moonlit-mountain/assets/images/moonlit-mountain-logo.svg
   homepage: https://github.com/DINGDANGMAOUP/moonlit-mountain
   repo: https://github.com/DINGDANGMAOUP/moonlit-mountain.git

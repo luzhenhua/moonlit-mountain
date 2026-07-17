@@ -2,7 +2,7 @@
   "name": "moonlit-mountain",
   "version": "0.0.1",
   "private": true,
-  "description": "山月记：基于 Vite 与 Thymeleaf 的 Halo 深色内容主题",
+  "description": "山月记：支持深夜、暮色、月白与跟随系统“月相”配色的 Halo 内容主题，默认保持当前深夜品牌",
   "author": "dingdangmaoup",
   "repository": {
     "type": "git",

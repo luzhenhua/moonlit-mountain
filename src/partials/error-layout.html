@@ -1,8 +1,17 @@
 <!doctype html>
-<html lang="zh-CN" th:lang="${#locale.toLanguageTag()}" data-color-scheme="dark" xmlns:th="http://www.thymeleaf.org">
+<html
+  lang="zh-CN"
+  th:lang="${#locale.toLanguageTag()}"
+  data-color-scheme="dark"
+  data-moon-phase="midnight"
+  data-resolved-moon-phase="midnight"
+  xmlns:th="http://www.thymeleaf.org"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#18181b" />
+    <include src="moon-phase-bootstrap.html"></include>
     <slot name="head">
       <title th:text="${site.title}">山月记</title>
     </slot>

@@ -1,8 +1,17 @@
 <!doctype html>
-<html lang="zh-CN" th:lang="${#locale.toLanguageTag()}" data-color-scheme="dark" xmlns:th="http://www.thymeleaf.org">
+<html
+  lang="zh-CN"
+  th:lang="${#locale.toLanguageTag()}"
+  data-color-scheme="dark"
+  data-moon-phase="midnight"
+  data-resolved-moon-phase="midnight"
+  xmlns:th="http://www.thymeleaf.org"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#18181b" />
+    <include src="moon-phase-bootstrap.html"></include>
     <slot name="head">
       <title th:text="${site.title}">山月记</title>
     </slot>
@@ -103,6 +112,84 @@
               <span class="nav-indicator" data-nav-indicator></span>
             </span>
           </nav>
+
+          <svg class="moon-phase-symbols" aria-hidden="true" focusable="false">
+            <symbol id="moonlit-mountain-phase-midnight" viewBox="0 0 20 20">
+              <path d="M4.8 15.2A7.35 7.35 0 1 1 15.2 15.2" fill="none" stroke="#52525b" stroke-linecap="round" stroke-width="1.2"></path>
+              <path d="M10.25 5.2a4.8 4.8 0 1 0 3.1 8.45 5.45 5.45 0 0 1-3.1-8.45Z" fill="#facc15"></path>
+              <circle cx="4.8" cy="15.2" r="1.05" fill="#0ea5e9"></circle>
+            </symbol>
+            <symbol id="moonlit-mountain-phase-twilight" viewBox="0 0 20 20">
+              <path d="M4.8 15.2A7.35 7.35 0 1 1 15.2 15.2" fill="none" stroke="#5c6c66" stroke-linecap="round" stroke-width="1.2"></path>
+              <circle cx="10" cy="10" r="4.35" fill="#5eb2c1" fill-opacity=".26" stroke="#5eb2c1" stroke-width="1"></circle>
+              <path d="M5.65 10h8.7a4.35 4.35 0 0 1-8.7 0Z" fill="#e9b65f"></path>
+              <circle cx="15.2" cy="15.2" r="1.05" fill="#e9b65f"></circle>
+            </symbol>
+            <symbol id="moonlit-mountain-phase-moonlight" viewBox="0 0 20 20">
+              <path d="M4.8 15.2A7.35 7.35 0 1 1 15.2 15.2" fill="none" stroke="#73898b" stroke-linecap="round" stroke-width="1.2"></path>
+              <circle cx="10" cy="10" r="4.45" fill="#d1dddf" stroke="#0c6570" stroke-width="1"></circle>
+              <circle cx="8.6" cy="8.75" r=".62" fill="#8fa7a8"></circle>
+              <circle cx="11.55" cy="11.45" r=".42" fill="#8fa7a8"></circle>
+              <circle cx="4.8" cy="15.2" r="1.05" fill="#835c0f"></circle>
+            </symbol>
+            <symbol id="moonlit-mountain-phase-system" viewBox="0 0 20 20">
+              <path d="M10 2.6A7.4 7.4 0 0 0 10 17.4" fill="none" stroke="#52525b" stroke-linecap="round" stroke-width="1.2"></path>
+              <path d="M10 2.6A7.4 7.4 0 0 1 10 17.4" fill="none" stroke="#73898b" stroke-linecap="round" stroke-width="1.2"></path>
+              <circle cx="10" cy="10" r="4.35" fill="#e8eff0" stroke="#73898b" stroke-width="1"></circle>
+              <path d="M10 5.65v8.7a4.35 4.35 0 0 1 0-8.7Z" fill="#18181b"></path>
+              <circle cx="10" cy="2.6" r=".95" fill="#facc15"></circle>
+              <circle cx="10" cy="17.4" r=".95" fill="#0ea5e9"></circle>
+            </symbol>
+          </svg>
+
+          <details class="moon-phase-switcher" data-moon-phase-switcher>
+            <summary th:aria-label="#{nav.moonPhase}" th:title="#{nav.moonPhase}">
+              <svg class="moon-phase-symbol moon-phase-symbol--trigger" aria-hidden="true" focusable="false" viewBox="0 0 20 20">
+                <use data-phase-icon="midnight" href="#moonlit-mountain-phase-midnight"></use>
+                <use data-phase-icon="twilight" href="#moonlit-mountain-phase-twilight"></use>
+                <use data-phase-icon="moonlight" href="#moonlit-mountain-phase-moonlight"></use>
+                <use data-phase-icon="system" href="#moonlit-mountain-phase-system"></use>
+              </svg>
+              <span class="moon-phase-switcher__label" th:text="#{nav.moonPhase}">月相</span>
+              <span class="moon-phase-switcher__current" data-moon-phase-current aria-hidden="true" th:text="#{moonPhase.midnight}">深夜</span>
+              <svg class="moon-phase-switcher__chevron" aria-hidden="true" viewBox="0 0 20 20"><path d="m6 8 4 4 4-4"></path></svg>
+            </summary>
+            <fieldset class="moon-phase-switcher__panel">
+              <legend class="sr-only" th:text="#{nav.moonPhase}">月相</legend>
+              <label class="moon-phase-option" data-phase="midnight">
+                <input type="radio" name="moon-phase" value="midnight" data-moon-phase-option checked />
+                <svg class="moon-phase-symbol" aria-hidden="true" focusable="false" viewBox="0 0 20 20"><use href="#moonlit-mountain-phase-midnight"></use></svg>
+                <span class="moon-phase-option__copy">
+                  <strong th:text="#{moonPhase.midnight}">深夜</strong>
+                  <small class="sr-only" th:text="#{moonPhase.midnight.description}">当前深色品牌</small>
+                </span>
+              </label>
+              <label class="moon-phase-option" data-phase="twilight">
+                <input type="radio" name="moon-phase" value="twilight" data-moon-phase-option />
+                <svg class="moon-phase-symbol" aria-hidden="true" focusable="false" viewBox="0 0 20 20"><use href="#moonlit-mountain-phase-twilight"></use></svg>
+                <span class="moon-phase-option__copy">
+                  <strong th:text="#{moonPhase.twilight}">暮色</strong>
+                  <small class="sr-only" th:text="#{moonPhase.twilight.description}">蓝时与余晖</small>
+                </span>
+              </label>
+              <label class="moon-phase-option" data-phase="moonlight">
+                <input type="radio" name="moon-phase" value="moonlight" data-moon-phase-option />
+                <svg class="moon-phase-symbol" aria-hidden="true" focusable="false" viewBox="0 0 20 20"><use href="#moonlit-mountain-phase-moonlight"></use></svg>
+                <span class="moon-phase-option__copy">
+                  <strong th:text="#{moonPhase.moonlight}">月白</strong>
+                  <small class="sr-only" th:text="#{moonPhase.moonlight.description}">银纸与墨色</small>
+                </span>
+              </label>
+              <label class="moon-phase-option" data-phase="system">
+                <input type="radio" name="moon-phase" value="system" data-moon-phase-option />
+                <svg class="moon-phase-symbol" aria-hidden="true" focusable="false" viewBox="0 0 20 20"><use href="#moonlit-mountain-phase-system"></use></svg>
+                <span class="moon-phase-option__copy">
+                  <strong th:text="#{moonPhase.system}">跟随系统</strong>
+                  <small class="sr-only" th:text="#{moonPhase.system.description}">随设备明暗</small>
+                </span>
+              </label>
+            </fieldset>
+          </details>
 
           <label class="language-switcher">
             <svg aria-hidden="true" viewBox="0 0 24 24">

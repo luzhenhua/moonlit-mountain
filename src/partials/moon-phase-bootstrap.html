@@ -1,0 +1,30 @@
+<script th:inline="javascript">
+  (() => {
+    const root = document.documentElement;
+    const storageKey = "moonlit-mountain.moon-phase.v1";
+    const phases = ["midnight", "twilight", "moonlight", "system"];
+    const configuredPhase = /*[[${theme.config?.style?.color_scheme ?: 'midnight'}]]*/ "midnight";
+    const fallbackPhase = phases.includes(configuredPhase) ? configuredPhase : "midnight";
+    let phase = fallbackPhase;
+
+    try {
+      const storedPhase = localStorage.getItem(storageKey);
+      if (storedPhase && phases.includes(storedPhase)) phase = storedPhase;
+    } catch {
+      // Storage can be unavailable in private or hardened browsing contexts.
+    }
+
+    const systemPrefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches ?? false;
+    const resolvedPhase = phase === "system" ? (systemPrefersLight ? "moonlight" : "midnight") : phase;
+    root.dataset.defaultMoonPhase = fallbackPhase;
+    root.dataset.moonPhase = phase;
+    root.dataset.resolvedMoonPhase = resolvedPhase;
+    root.dataset.colorScheme = resolvedPhase === "moonlight" ? "light" : "dark";
+
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    themeColor?.setAttribute(
+      "content",
+      resolvedPhase === "moonlight" ? "#e8eff0" : resolvedPhase === "twilight" ? "#171e22" : "#18181b",
+    );
+  })();
+</script>
