@@ -4954,6 +4954,22 @@ body[data-template="archives"] .listing-hero > p:last-child {
   animation-timing-function: var(--ease);
 }
 
+:root[data-moon-phase-transition]::view-transition-old(root),
+:root[data-moon-phase-transition]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+:root[data-moon-phase-transition="new"]::view-transition-old(root),
+:root[data-moon-phase-transition="old"]::view-transition-new(root) {
+  z-index: 1;
+}
+
+:root[data-moon-phase-transition="new"]::view-transition-new(root),
+:root[data-moon-phase-transition="old"]::view-transition-old(root) {
+  z-index: 2;
+}
+
 @media (max-width: 1023px) {
   .container {
     width: min(100% - 48px, 896px);

@@ -66,16 +66,54 @@ const formatMessage = (key: MessageKey, ...values: Array<string | number>) =>
 
 type MoonPhase = "midnight" | "twilight" | "moonlight" | "system";
 type ResolvedMoonPhase = Exclude<MoonPhase, "system">;
+type MoonPhaseTransitionLayer = "old" | "new";
+
+interface MoonPhaseViewTransition {
+  ready: Promise<void>;
+  finished: Promise<void>;
+  skipTransition: () => void;
+}
+
+interface MoonPhaseTransitionOrigin {
+  phase: MoonPhase;
+  x: number;
+  y: number;
+}
+
+interface ActiveMoonPhaseTransition {
+  viewTransition?: MoonPhaseViewTransition;
+  animation?: Animation;
+}
+
+type MoonPhaseTransitionDocument = Document & {
+  startViewTransition?: (updateCallback: () => void) => MoonPhaseViewTransition;
+};
+
+type ViewTransitionAnimationOptions = KeyframeAnimationOptions & {
+  pseudoElement: string;
+};
 
 const moonPhaseStorageKey = "moonlit-mountain.moon-phase.v1";
 const moonPhaseValues = new Set<MoonPhase>(["midnight", "twilight", "moonlight", "system"]);
+const moonPhaseLightness: Record<ResolvedMoonPhase, number> = {
+  midnight: 0,
+  twilight: 1,
+  moonlight: 2,
+};
 const root = document.documentElement;
 const systemLightPreference = window.matchMedia("(prefers-color-scheme: light)");
+const reducedMotionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+const transitionDocument = document as MoonPhaseTransitionDocument;
+const startMoonPhaseViewTransition = transitionDocument.startViewTransition?.bind(document);
 const moonPhaseSwitcher = document.querySelector<HTMLDetailsElement>("[data-moon-phase-switcher]");
 const moonPhaseOptions = Array.from(
   document.querySelectorAll<HTMLInputElement>("[data-moon-phase-option]"),
 );
 const moonPhaseCurrent = document.querySelector<HTMLElement>("[data-moon-phase-current]");
+const moonPhaseSummary = moonPhaseSwitcher?.querySelector<HTMLElement>("summary");
+
+let activeMoonPhaseTransition: ActiveMoonPhaseTransition | undefined;
+let pointerTransitionOrigin: MoonPhaseTransitionOrigin | undefined;
 
 const isMoonPhase = (value: string | undefined | null): value is MoonPhase =>
   Boolean(value && moonPhaseValues.has(value as MoonPhase));
@@ -87,7 +125,7 @@ const configuredMoonPhase: MoonPhase = isMoonPhase(root.dataset.defaultMoonPhase
 const resolveMoonPhase = (phase: MoonPhase): ResolvedMoonPhase =>
   phase === "system" ? (systemLightPreference.matches ? "moonlight" : "midnight") : phase;
 
-const applyMoonPhase = (phase: MoonPhase, persist = false) => {
+const commitMoonPhase = (phase: MoonPhase, persist = false) => {
   const resolvedPhase = resolveMoonPhase(phase);
   root.dataset.moonPhase = phase;
   root.dataset.resolvedMoonPhase = resolvedPhase;
@@ -123,28 +161,167 @@ const applyMoonPhase = (phase: MoonPhase, persist = false) => {
   );
 };
 
+const cancelMoonPhaseTransition = () => {
+  const activeTransition = activeMoonPhaseTransition;
+  activeMoonPhaseTransition = undefined;
+  root.removeAttribute("data-moon-phase-transition");
+  activeTransition?.animation?.cancel();
+  activeTransition?.viewTransition?.skipTransition();
+};
+
+const applyMoonPhaseImmediately = (phase: MoonPhase, persist = false) => {
+  cancelMoonPhaseTransition();
+  commitMoonPhase(phase, persist);
+};
+
+const getMoonPhaseTransitionOrigin = (option: HTMLInputElement) => {
+  if (pointerTransitionOrigin?.phase === option.value) {
+    return { x: pointerTransitionOrigin.x, y: pointerTransitionOrigin.y };
+  }
+
+  const optionElement = option.closest<HTMLElement>(".moon-phase-option");
+  const anchor = optionElement?.querySelector<HTMLElement>(".moon-phase-symbol") || optionElement;
+  const rect = anchor?.getBoundingClientRect() || moonPhaseSummary?.getBoundingClientRect();
+  return {
+    x: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
+    y: rect ? rect.top + rect.height / 2 : window.innerHeight / 2,
+  };
+};
+
+const applyMoonPhaseWithTransition = (
+  phase: MoonPhase,
+  persist: boolean,
+  origin: { x: number; y: number },
+) => {
+  const currentPhase = isMoonPhase(root.dataset.moonPhase)
+    ? root.dataset.moonPhase
+    : configuredMoonPhase;
+  const currentResolvedPhase = resolveMoonPhase(currentPhase);
+  const nextResolvedPhase = resolveMoonPhase(phase);
+
+  if (
+    !startMoonPhaseViewTransition ||
+    reducedMotionPreference.matches ||
+    currentResolvedPhase === nextResolvedPhase
+  ) {
+    applyMoonPhaseImmediately(phase, persist);
+    return;
+  }
+
+  const x = Math.min(Math.max(origin.x, 0), window.innerWidth);
+  const y = Math.min(Math.max(origin.y, 0), window.innerHeight);
+  const radius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y),
+  );
+  const transitionLayer: MoonPhaseTransitionLayer =
+    moonPhaseLightness[nextResolvedPhase] > moonPhaseLightness[currentResolvedPhase]
+      ? "new"
+      : "old";
+  const clipPath = [
+    `circle(0px at ${x}px ${y}px)`,
+    `circle(${radius}px at ${x}px ${y}px)`,
+  ];
+
+  const transitionOwner: ActiveMoonPhaseTransition = {};
+  const previousTransition = activeMoonPhaseTransition;
+  activeMoonPhaseTransition = transitionOwner;
+  previousTransition?.animation?.cancel();
+  previousTransition?.viewTransition?.skipTransition();
+  root.dataset.moonPhaseTransition = transitionLayer;
+
+  let transition: MoonPhaseViewTransition;
+
+  try {
+    transition = startMoonPhaseViewTransition(() => {
+      if (activeMoonPhaseTransition !== transitionOwner) return;
+      commitMoonPhase(phase, persist);
+    });
+  } catch {
+    if (activeMoonPhaseTransition === transitionOwner) {
+      activeMoonPhaseTransition = undefined;
+      root.removeAttribute("data-moon-phase-transition");
+      commitMoonPhase(phase, persist);
+    }
+    return;
+  }
+
+  transitionOwner.viewTransition = transition;
+
+  void transition.ready.then(
+    () => {
+      if (activeMoonPhaseTransition !== transitionOwner) return;
+
+      try {
+        transitionOwner.animation = root.animate(
+          {
+            clipPath: transitionLayer === "new" ? clipPath : [...clipPath].reverse(),
+          },
+          {
+            duration: 300,
+            easing: "ease-in",
+            fill: "both",
+            pseudoElement: `::view-transition-${transitionLayer}(root)`,
+          } as ViewTransitionAnimationOptions,
+        );
+      } catch {
+        transition.skipTransition();
+      }
+    },
+    () => undefined,
+  );
+
+  const finishTransition = () => {
+    if (activeMoonPhaseTransition !== transitionOwner) return;
+    transitionOwner.animation?.cancel();
+    activeMoonPhaseTransition = undefined;
+    root.removeAttribute("data-moon-phase-transition");
+  };
+  void transition.finished.then(finishTransition, finishTransition);
+};
+
 const initialMoonPhase = isMoonPhase(root.dataset.moonPhase)
   ? root.dataset.moonPhase
   : configuredMoonPhase;
-applyMoonPhase(initialMoonPhase);
+applyMoonPhaseImmediately(initialMoonPhase);
+
+moonPhaseSwitcher?.addEventListener(
+  "click",
+  (event) => {
+    if (pointerTransitionOrigin || event.detail === 0 || !(event.target instanceof Element)) return;
+    const option = event.target
+      .closest<HTMLElement>(".moon-phase-option")
+      ?.querySelector<HTMLInputElement>("[data-moon-phase-option]");
+    if (!option || !isMoonPhase(option.value)) return;
+
+    const origin = { phase: option.value, x: event.clientX, y: event.clientY };
+    pointerTransitionOrigin = origin;
+    queueMicrotask(() => {
+      if (pointerTransitionOrigin === origin) pointerTransitionOrigin = undefined;
+    });
+  },
+  { capture: true },
+);
 
 moonPhaseOptions.forEach((option) => {
   option.addEventListener("change", () => {
     if (!option.checked || !isMoonPhase(option.value)) return;
-    applyMoonPhase(option.value, true);
+    const origin = getMoonPhaseTransitionOrigin(option);
+    pointerTransitionOrigin = undefined;
     moonPhaseSwitcher?.removeAttribute("open");
-    moonPhaseSwitcher?.querySelector<HTMLElement>("summary")?.focus();
+    moonPhaseSummary?.focus();
+    applyMoonPhaseWithTransition(option.value, true, origin);
   });
 });
 
 systemLightPreference.addEventListener("change", () => {
-  if (root.dataset.moonPhase === "system") applyMoonPhase("system");
+  if (root.dataset.moonPhase === "system") applyMoonPhaseImmediately("system");
 });
 
 window.addEventListener("storage", (event) => {
   if (event.storageArea !== window.localStorage) return;
   if (event.key !== moonPhaseStorageKey && event.key !== null) return;
-  applyMoonPhase(isMoonPhase(event.newValue) ? event.newValue : configuredMoonPhase);
+  applyMoonPhaseImmediately(isMoonPhase(event.newValue) ? event.newValue : configuredMoonPhase);
 });
 
 document.addEventListener("pointerdown", (event) => {
