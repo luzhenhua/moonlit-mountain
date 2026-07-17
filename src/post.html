@@ -7,15 +7,51 @@
     <header class="article-hero">
       <h1 th:text="${post.spec.title}">文章标题</h1>
       <div class="article-meta">
-        <div class="article-meta__row">
-          <span class="article-meta__label" th:text="#{page.post.published}">发布</span>
-          <time
-            class="article-meta__date"
-            th:datetime="${post.spec.publishTime}"
-            th:text="${#temporals.format(post.spec.publishTime, #messages.msg('date.format.long'))}"
-          >2026年07月10日</time>
-        </div>
-        <div class="article-meta__row" th:if="${not #lists.isEmpty(post.categories)}">
+        <dl class="article-facts">
+          <div class="article-fact article-fact--author" th:if="${post.owner != null}">
+            <dt th:text="#{page.post.author}">作者</dt>
+            <dd>
+              <a class="article-author" th:href="@{${post.owner.permalink}}">
+                <span class="article-author__avatar" aria-hidden="true">
+                  <img
+                    th:if="${not #strings.isEmpty(post.owner.avatar)}"
+                    th:src="${post.owner.avatar}"
+                    th:alt="${post.owner.displayName ?: post.owner.name}"
+                  />
+                  <svg th:unless="${not #strings.isEmpty(post.owner.avatar)}" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0" /></svg>
+                </span>
+                <span th:text="${post.owner.displayName ?: post.owner.name}">作者名称</span>
+              </a>
+            </dd>
+          </div>
+          <div class="article-fact">
+            <dt th:text="#{page.post.published}">发布于</dt>
+            <dd>
+              <time
+                th:datetime="${post.spec.publishTime}"
+                th:text="${#temporals.format(post.spec.publishTime, #messages.msg('date.format.long'))}"
+              >2026年07月10日</time>
+            </dd>
+          </div>
+          <div class="article-fact" th:if="${post.status.lastModifyTime != null}">
+            <dt th:text="#{page.post.updated}">更新于</dt>
+            <dd>
+              <time
+                th:datetime="${post.status.lastModifyTime}"
+                th:text="${#temporals.format(post.status.lastModifyTime, #messages.msg('date.format.long'))}"
+              >2026年07月17日</time>
+            </dd>
+          </div>
+          <div class="article-fact">
+            <dt th:text="#{page.post.readingTime}">阅读时长</dt>
+            <dd><span data-reading-time aria-live="polite">—</span></dd>
+          </div>
+          <div class="article-fact">
+            <dt th:text="#{page.post.visits}">访问量</dt>
+            <dd><span th:text="${post.stats.visit}">0</span></dd>
+          </div>
+        </dl>
+        <div class="article-meta__taxonomy" th:if="${not #lists.isEmpty(post.categories)}">
           <span class="article-meta__label" th:text="#{page.post.categories}">分类</span>
           <ul class="category-list" role="list" aria-label="文章分类" th:aria-label="#{page.post.categoriesAria}">
             <li th:each="category : ${post.categories}">
@@ -28,6 +64,60 @@
         </div>
       </div>
     </header>
+
+    <aside
+      class="reader-tools"
+      th:attr="data-share-title=${post.spec.title},data-reader-settings-enabled=${theme.config?.post?.enable_reader_settings != false}"
+      th:aria-label="#{page.post.readerTools}"
+      data-reader-tools
+    >
+      <div class="reader-tools__actions">
+        <button type="button" data-article-share>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 16V3m0 0L7 8m5-5 5 5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" /></svg>
+          <span th:text="#{page.post.share}">分享</span>
+        </button>
+        <button type="button" data-article-print>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" /></svg>
+          <span th:text="#{page.post.print}">打印</span>
+        </button>
+      </div>
+
+      <details
+        class="reader-settings"
+        th:if="${theme.config?.post?.enable_reader_settings != false}"
+        data-reader-settings
+      >
+        <summary>
+          <span th:text="#{page.post.readerSettings}">阅读设置</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" /></svg>
+        </summary>
+        <div class="reader-settings__body">
+          <div class="reader-setting">
+            <div class="reader-setting__head">
+              <label for="reader-font-size" th:text="#{page.post.fontSize}">字号</label>
+              <output for="reader-font-size" data-reader-output="fontSize">17 px</output>
+            </div>
+            <input id="reader-font-size" type="range" min="15" max="21" step="1" value="17" data-reader-setting="fontSize" />
+          </div>
+          <div class="reader-setting">
+            <div class="reader-setting__head">
+              <label for="reader-line-height" th:text="#{page.post.lineHeight}">行高</label>
+              <output for="reader-line-height" data-reader-output="lineHeight">1.80</output>
+            </div>
+            <input id="reader-line-height" type="range" min="1.55" max="2.05" step="0.05" value="1.8" data-reader-setting="lineHeight" />
+          </div>
+          <div class="reader-setting">
+            <div class="reader-setting__head">
+              <label for="reader-content-width" th:text="#{page.post.contentWidth}">正文宽度</label>
+              <output for="reader-content-width" data-reader-output="contentWidth">750 px</output>
+            </div>
+            <input id="reader-content-width" type="range" min="640" max="860" step="10" value="750" data-reader-setting="contentWidth" />
+          </div>
+          <button class="reader-settings__reset" type="button" data-reader-reset th:text="#{page.post.resetReaderSettings}">恢复默认</button>
+        </div>
+      </details>
+      <p class="reader-tools__feedback" role="status" aria-live="polite" data-reader-feedback></p>
+    </aside>
 
     <aside
       class="article-toc"

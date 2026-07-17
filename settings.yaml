@@ -95,6 +95,14 @@ spec:
                   value: normal
                 - label: 图片
                   value: image
+    - group: post
+      label: 文章阅读
+      formSchema:
+        - $formkit: switch
+          name: enable_reader_settings
+          label: 阅读设置
+          help: 在文章页显示字号、行高和正文宽度调节面板
+          value: true
     - group: footer
       label: 页脚与备案
       formSchema:

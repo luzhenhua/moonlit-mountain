@@ -15,7 +15,7 @@ spec:
   settingName: "moonlit-mountain-setting"
   configMapName: "moonlit-mountain-config"
   version: 0.0.1
-  requires: ">=2.22.0"
+  requires: ">=2.22.2"
   license:
     - name: MIT
       url: https://github.com/DINGDANGMAOUP/moonlit-mountain/blob/main/LICENSE

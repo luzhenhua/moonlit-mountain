@@ -46,6 +46,11 @@ const defaultMessages = {
   tocSection: "章节 {0}",
   tocOpen: "打开文章目录",
   tocClose: "关闭文章目录",
+  readingTime: "约 {0} 分钟阅读",
+  shareComplete: "分享完成。",
+  linkCopied: "链接已复制，可以粘贴分享。",
+  shareError: "暂时无法分享，请复制地址栏链接。",
+  readerReset: "已恢复默认排版。",
 } as const;
 
 type MessageKey = keyof typeof defaultMessages;
@@ -169,6 +174,15 @@ const backdrop = document.querySelector<HTMLButtonElement>("[data-menu-backdrop]
 const progress = document.querySelector<HTMLElement>("[data-page-progress]");
 const articleContent = document.querySelector<HTMLElement>(".article-content");
 const articleToc = document.querySelector<HTMLElement>("[data-article-toc]");
+const readingTimeOutput = document.querySelector<HTMLElement>("[data-reading-time]");
+const readerTools = document.querySelector<HTMLElement>("[data-reader-tools]");
+const readerSettings = readerTools?.querySelector<HTMLDetailsElement>("[data-reader-settings]");
+const readerSettingsEnabled = Boolean(
+  readerTools && readerTools.dataset.readerSettingsEnabled !== "false",
+);
+const readerFeedback = readerTools?.querySelector<HTMLElement>("[data-reader-feedback]");
+const articleShare = readerTools?.querySelector<HTMLButtonElement>("[data-article-share]");
+const articlePrint = readerTools?.querySelector<HTMLButtonElement>("[data-article-print]");
 const siteMark = document.querySelector<HTMLElement>("[data-home-mark]");
 const socialImageDialog = document.querySelector<HTMLDialogElement>("[data-social-image-dialog]");
 const socialImagePreview = socialImageDialog?.querySelector<HTMLImageElement>("[data-social-image-preview]");
@@ -180,6 +194,182 @@ const menuBackground = Array.from(
 );
 
 let setMobileMenuOpen: ((open: boolean, restoreFocus?: boolean) => void) | undefined;
+
+const copyText = async (value: string) => {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch {
+      // Some browsers expose Clipboard but deny it at runtime; use the legacy fallback below.
+    }
+  }
+
+  const fallback = document.createElement("textarea");
+  fallback.value = value;
+  fallback.setAttribute("readonly", "");
+  fallback.style.position = "fixed";
+  fallback.style.inset = "-100vh auto auto -100vw";
+  document.body.append(fallback);
+  fallback.select();
+  const copied = document.execCommand("copy");
+  fallback.remove();
+  if (!copied) throw new Error("Clipboard copy was rejected");
+};
+
+let readerFeedbackTimer = 0;
+const announceReaderFeedback = (value: string) => {
+  if (!readerFeedback) return;
+  window.clearTimeout(readerFeedbackTimer);
+  readerFeedback.textContent = value;
+  readerFeedbackTimer = window.setTimeout(() => {
+    readerFeedback.textContent = "";
+  }, 4200);
+};
+
+if (articleContent && readingTimeOutput) {
+  const text = articleContent.textContent?.replace(/\s+/g, " ").trim() || "";
+  const eastAsianCharacters = text.match(/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff]/g)?.length || 0;
+  const latinWords = text
+    .replace(/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\uf900-\ufaff]/g, " ")
+    .match(/[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu)?.length || 0;
+  const minutes = Math.max(1, Math.ceil(eastAsianCharacters / 500 + latinWords / 225));
+  readingTimeOutput.textContent = formatMessage("readingTime", minutes);
+}
+
+articleShare?.addEventListener("click", () => {
+  if (articleShare.disabled) return;
+  articleShare.disabled = true;
+  articleShare.setAttribute("aria-busy", "true");
+
+  void (async () => {
+    const shareUrl =
+      document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href ||
+      new URL(window.location.pathname, window.location.origin).href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: readerTools?.dataset.shareTitle || document.title,
+          url: shareUrl,
+        });
+        announceReaderFeedback(message("shareComplete"));
+      } else {
+        await copyText(shareUrl);
+        announceReaderFeedback(message("linkCopied"));
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      try {
+        await copyText(shareUrl);
+        announceReaderFeedback(message("linkCopied"));
+      } catch {
+        announceReaderFeedback(message("shareError"));
+      }
+    } finally {
+      articleShare.disabled = false;
+      articleShare.removeAttribute("aria-busy");
+    }
+  })();
+});
+
+articlePrint?.addEventListener("click", () => window.print());
+
+type ReaderPreferenceKey = "fontSize" | "lineHeight" | "contentWidth";
+type ReaderPreferences = Record<ReaderPreferenceKey, number>;
+
+const readerPreferenceDefaults: ReaderPreferences = {
+  fontSize: 17,
+  lineHeight: 1.8,
+  contentWidth: 750,
+};
+const readerPreferenceStorageKey = "moonlit-mountain.reader-preferences.v1";
+const readerPreferenceBounds: Record<ReaderPreferenceKey, { min: number; max: number }> = {
+  fontSize: { min: 15, max: 21 },
+  lineHeight: { min: 1.55, max: 2.05 },
+  contentWidth: { min: 640, max: 860 },
+};
+const readerInputs = Array.from(
+  readerTools?.querySelectorAll<HTMLInputElement>("[data-reader-setting]") || [],
+);
+
+const isReaderPreferenceKey = (value: string): value is ReaderPreferenceKey =>
+  value === "fontSize" || value === "lineHeight" || value === "contentWidth";
+
+const readStoredReaderPreferences = (): ReaderPreferences => {
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem(readerPreferenceStorageKey) || "null");
+    if (!stored || typeof stored !== "object") return { ...readerPreferenceDefaults };
+
+    const preferences = { ...readerPreferenceDefaults };
+    (Object.keys(preferences) as ReaderPreferenceKey[]).forEach((key) => {
+      const value = Number((stored as Record<string, unknown>)[key]);
+      const { min, max } = readerPreferenceBounds[key];
+      if (Number.isFinite(value) && value >= min && value <= max) preferences[key] = value;
+    });
+    return preferences;
+  } catch {
+    return { ...readerPreferenceDefaults };
+  }
+};
+
+let readerPreferences = readerSettingsEnabled
+  ? readStoredReaderPreferences()
+  : { ...readerPreferenceDefaults };
+
+const formatReaderPreference = (key: ReaderPreferenceKey, value: number) => {
+  if (key === "lineHeight") return value.toFixed(2);
+  return `${Math.round(value)} px`;
+};
+
+const applyReaderPreferences = (persist = false) => {
+  document.body.style.setProperty("--reader-font-size", `${readerPreferences.fontSize}px`);
+  document.body.style.setProperty("--reader-line-height", String(readerPreferences.lineHeight));
+  document.body.style.setProperty("--reader-content-width", `${readerPreferences.contentWidth}px`);
+
+  readerInputs.forEach((input) => {
+    const key = input.dataset.readerSetting || "";
+    if (!isReaderPreferenceKey(key)) return;
+    input.value = String(readerPreferences[key]);
+    const output = readerTools?.querySelector<HTMLOutputElement>(`[data-reader-output="${key}"]`);
+    if (output) output.value = formatReaderPreference(key, readerPreferences[key]);
+    const min = Number(input.min);
+    const max = Number(input.max);
+    const progress = ((readerPreferences[key] - min) / (max - min)) * 100;
+    input.style.setProperty("--reader-range-progress", `${progress}%`);
+  });
+
+  if (!persist) return;
+  try {
+    localStorage.setItem(readerPreferenceStorageKey, JSON.stringify(readerPreferences));
+  } catch {
+    // Preference changes still apply for the current page when storage is unavailable.
+  }
+};
+
+if (readerTools && readerSettingsEnabled) {
+  applyReaderPreferences();
+  if (readerSettings) readerSettings.open = window.matchMedia("(min-width: 1440px)").matches;
+
+  readerInputs.forEach((input) => {
+    input.addEventListener("input", () => {
+      const key = input.dataset.readerSetting || "";
+      if (!isReaderPreferenceKey(key)) return;
+      const value = Number(input.value);
+      const { min, max } = readerPreferenceBounds[key];
+      if (!Number.isFinite(value)) return;
+      readerPreferences[key] = Math.min(max, Math.max(min, value));
+      applyReaderPreferences(true);
+      updateScrollState();
+    });
+  });
+
+  readerTools.querySelector<HTMLButtonElement>("[data-reader-reset]")?.addEventListener("click", () => {
+    readerPreferences = { ...readerPreferenceDefaults };
+    applyReaderPreferences(true);
+    updateScrollState();
+    announceReaderFeedback(message("readerReset"));
+  });
+}
 
 languageSwitcher?.addEventListener("change", () => {
   const language = languageSwitcher.value.trim();
@@ -1045,7 +1235,7 @@ tocHeadings.forEach((heading, index) => {
 
 const tocLinks = Array.from(tocList?.querySelectorAll<HTMLAnchorElement>("a") || []);
 const hasToc = tocHeadings.length > 0 && tocLinks.length > 0;
-const isDesktopToc = () => window.innerWidth >= 1280;
+const isDesktopToc = () => window.innerWidth >= 1440;
 
 const setInteractiveVisibility = (element: HTMLElement | null, visible: boolean) => {
   if (!element) return;
