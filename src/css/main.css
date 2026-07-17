@@ -2385,7 +2385,7 @@ body[data-template="archives"] .listing-hero > p:last-child {
   display: grid;
   min-width: 0;
   padding-top: 16px;
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: minmax(54px, max-content) minmax(0, 1fr);
   align-items: start;
   border-top: 1px solid rgb(var(--line-rgb) / 24%);
   gap: 16px;
