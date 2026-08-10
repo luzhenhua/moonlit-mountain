@@ -54,7 +54,7 @@ corepack pnpm run check:i18n
 corepack pnpm build
 ```
 
-产物位于 `dist/moonlit-mountain-0.0.1.zip`。
+产物位于 `dist/moonlit-mountain-0.0.2.zip`。
 
 ## 可选官方插件
 

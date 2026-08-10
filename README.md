@@ -69,7 +69,7 @@ corepack pnpm dev
 corepack pnpm build
 ```
 
-构建会先执行国际化完整性检查，发布包随后生成到 `dist/moonlit-mountain-0.0.1.zip`。
+构建会先执行国际化完整性检查，发布包随后生成到 `dist/moonlit-mountain-0.0.2.zip`。版本变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 官方瞬间插件
 

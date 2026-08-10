@@ -14,7 +14,7 @@ spec:
   issues: https://github.com/DINGDANGMAOUP/moonlit-mountain/issues
   settingName: "moonlit-mountain-setting"
   configMapName: "moonlit-mountain-config"
-  version: 0.0.1
+  version: 0.0.2
   requires: ">=2.22.2"
   license:
     - name: MIT
